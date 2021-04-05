@@ -1,0 +1,91 @@
+{
+  "name": "DualSR_pretrain_x4_DIV2K_500",
+  "use_tb_logger": true,
+  "model": "DualSR_pretrain",
+  "scale": 4,
+  "gpu_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  
+  "datasets": {
+    "train": {
+      "name": "DIV2K",
+      "mode": "LRHR",
+      "dataroot_HR": "/media/e621/downloads/.tmp/DIV2K_train_HR_sub.lmdb",
+      "dataroot_LR": "/media/e621/downloads/.tmp/DIV2K_train_LR_x4_sub.lmdb",
+      //"dataroot_LR": "/media/e621/RAID5/e621/downloads/.tmp/DIV2K800_train_LR.lmdb",
+      "subset_file": null,
+      "use_shuffle": true,
+      "n_workers": 8,
+      "batch_size": 28,
+      "HR_size": 128,
+      "use_flip": true,
+      "use_rot": true
+    },
+
+    "val": {
+      "name": "val_set5_part",
+      "mode": "LRHR",
+      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/Set5/GTmod12",
+      "dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/Set5/LRbicx4"
+    }
+  },
+
+  "path": {
+    "root": "/home/e517herb/Desktop/LCC_BasicSR-master/"
+  },
+
+  "network_G": {
+    "which_model_G": "DualSR_RRDB",
+    "norm_type": null,
+    "mode": "CNA",
+    "nf": 64,
+    "nb_l_1": 10,
+    "nb_l_2": 5,
+    "nb_h_1": 5,
+    "nb_h_2": 10,
+    "nb_e": 2,
+    "nb_m": 5,
+    "in_nc": 3,
+    "out_nc": 3,
+    "gc": 32,
+    "group": 1
+  },
+
+  "network_D": {
+    "which_model_D": "discriminator_vgg_128",
+    "norm_type": "batch",
+    "act_type": "leakyrelu",
+    "mode": "CNA",
+    "nf": 64,
+    "in_nc": 3
+  },
+
+  "train": {
+    "lr_G": 5e-5,
+    "lr_scheme": "MultiStepLR",
+    "lr_steps": [
+      200000,
+      400000,
+      600000,
+      800000
+    ],
+
+    "lr_gamma": 0.5,
+    "pixel_criterion": "l2",
+    "pixel_weight": 1.0,
+    "feature_weight": 1,
+    "val_freq": 1e3,
+    "manual_seed": 0,
+    "niter": 5e3
+    
+  },
+
+  "logger": {
+    "print_freq": 200,
+    "save_checkpoint_freq": 1e3
+  }
+}
