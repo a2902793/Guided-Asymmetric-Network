@@ -1,7 +1,7 @@
 {
-  "name": "DualSR_x4_DIV2K_5kpretrain_200k-2", //  please remove "debug_" during training
+  "name": "debug_DualSR_Effnet_x4_DIV2K_5kpretrain_200k-2", //  please remove "debug_" during training
   "use_tb_logger": true,
-  "model":"DualSR",
+  "model":"DualSREff",
   "scale": 4,
   "gpu_ids": [
     0,
@@ -35,14 +35,10 @@
   
   "path": {
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
-    //"resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_x4_DIV2K_5kpretrain_200k/training_state/108000.state",
-    //"pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/pretrained_models/5k_G.pth"
-    //"pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_x4_DIV2K_5kpretrain_200k/models/108000_G.pth",
-    //"pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_x4_DIV2K_5kpretrain_200k/models/108000_D.pth"
   },
 
   "network_G": {
-    "which_model_G": "DualSR_RRDB",
+    "which_model_G": "DualSR_Effnet",
     "norm_type": null,
     "mode": "CNA",
     "nf": 64, // 32
@@ -82,7 +78,7 @@
       200000, 
       300000
     ], 
-
+    
     "lr_gamma": 0.5,
     "pixel_criterion": "l1", //標準
     "pixel_weight": 1,
@@ -93,15 +89,9 @@
     "gan_type": "vanilla",
     "gan_weight": 5e-3,
 
-    //for wgan-gp
-    // , "D_update_ratio": 1
-    // , "D_init_iters": 0
-    // , "gp_weigth": 10
-
     "val_freq": 2e3,
     "manual_seed": 0,
     "niter": 2e5
-    
   },
 
   "logger": {

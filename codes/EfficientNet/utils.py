@@ -253,6 +253,7 @@ class Conv2dStaticSamePadding(nn.Conv2d):
                                                 pad_h // 2, pad_h - pad_h // 2))
         else:
             self.static_padding = nn.Identity()
+        print("Debug: trackpoint")
 
     def forward(self, x):
         x = self.static_padding(x)

@@ -6,6 +6,7 @@ from torch.nn import init
 
 import models.modules.architecture as arch
 import models.modules.DualSR_RRDB as DualSR_RRDB
+import models.modules.DualSR_Effnet as DualSR_Effnet
 
 logger = logging.getLogger('base')
 ####################
@@ -103,12 +104,8 @@ def define_G(opt):
                             nb_h_2=opt_net['nb_h_2'],nb_m=opt_net['nb_m'], gc=opt_net['gc'], upscale=opt_net['scale'],
                             norm_type=opt_net['norm_type'],
                             act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
-    # elif which_model=='DualSR_RRDBCA':
-    #     netG = DualSR_RRDBCA.DualSR_RRDBCA(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-    #                         nb_l_1=opt_net['nb_l_1'],nb_l_2=opt_net['nb_l_2'],nb_h_1=opt_net['nb_h_1'],nb_e=opt_net['nb_e'],
-    #                         nb_h_2=opt_net['nb_h_2'],nb_m=opt_net['nb_m'], gc=opt_net['gc'], upscale=opt_net['scale'],
-    #                         norm_type=opt_net['norm_type'],
-    #                         act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
+    elif which_model=='DualSR_Effnet':
+        netG = DualSR_Effnet.DualSR_Effnet()
 
     else:
         raise NotImplementedError('Generator model [{:s}] not recognized'.format(which_model))
