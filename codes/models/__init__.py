@@ -17,8 +17,6 @@ def create_model(opt):
         from .DualSR_model import DualSRModel as M
     elif model == 'DualSR_pretrain':
         from .DualSR_pretrain import DualSR_pretrain as M
-    elif model == 'DualSREff':
-        from .DualSREff_model import DualSREffModel as M
     else:
         raise NotImplementedError('Model [{:s}] not recognized.'.format(model))
     m = M(opt)

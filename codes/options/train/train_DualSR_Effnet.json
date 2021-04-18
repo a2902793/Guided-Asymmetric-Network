@@ -1,7 +1,7 @@
 {
-  "name": "debug_DualSR_Effnet_x4_DIV2K_5kpretrain_200k-2", //  please remove "debug_" during training
+  "name": "DualSR_Effnet_x4_DIV2K_10k", //  please remove "debug_" during training
   "use_tb_logger": true,
-  "model":"DualSREff",
+  "model":"DualSR",
   "scale": 4,
   "gpu_ids": [
     0,
@@ -37,8 +37,11 @@
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
   },
 
+  "which_eff":"efficientnet-b0",
+
   "network_G": {
     "which_model_G": "DualSR_Effnet",
+    // "which_model_G": "DualSR_RRDB",
     "norm_type": null,
     "mode": "CNA",
     "nf": 64, // 32
@@ -91,7 +94,7 @@
 
     "val_freq": 2e3,
     "manual_seed": 0,
-    "niter": 2e5
+    "niter": 1e4
   },
 
   "logger": {

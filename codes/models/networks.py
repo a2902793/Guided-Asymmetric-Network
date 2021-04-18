@@ -7,6 +7,8 @@ from torch.nn import init
 import models.modules.architecture as arch
 import models.modules.DualSR_RRDB as DualSR_RRDB
 import models.modules.DualSR_Effnet as DualSR_Effnet
+from models.modules.block import RCAN_conv
+from models.modules.utils import get_model_params
 
 logger = logging.getLogger('base')
 ####################
@@ -86,7 +88,8 @@ def define_G(opt):
     gpu_ids = opt['gpu_ids']
     opt_net = opt['network_G']
     which_model = opt_net['which_model_G']
-
+    effnet=opt['which_eff']
+    blocks_args, global_params=get_model_params(effnet, None)
 
     if which_model == 'RRDB_net':  # RRDB
         netG = arch.RRDBNet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
@@ -105,7 +108,11 @@ def define_G(opt):
                             norm_type=opt_net['norm_type'],
                             act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
     elif which_model=='DualSR_Effnet':
-        netG = DualSR_Effnet.DualSR_Effnet()
+        netG = DualSR_Effnet.DualSR_Effnet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
+                            nb_e=opt_net['nb_e'],gc=opt_net['gc'], upscale=64,
+                            norm_type=opt_net['norm_type'],
+                            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv',
+                            blocks_args=blocks_args, global_params=global_params)
 
     else:
         raise NotImplementedError('Generator model [{:s}] not recognized'.format(which_model))
@@ -128,7 +135,7 @@ def define_E(opt):
             nb=opt_net['nb'], gc=opt_net['gc'], upscale=opt_net['scale'], norm_type=opt_net['norm_type'],
             act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
     elif which_model =='RCAN_E':
-        netE =rcan_e.RCAN_E(n_resblocks=opt_net['n_resblocks'], n_resgroups=opt_net['n_resgroups'], n_feats=opt_net['n_feats'], reduction=16, scale=4, n_colors=3, rgb_range=255, res_scale=1)
+        netE =RCAN_conv.RCAN_E(n_resblocks=opt_net['n_resblocks'], n_resgroups=opt_net['n_resgroups'], n_feats=opt_net['n_feats'], reduction=16, scale=4, n_colors=3, rgb_range=255, res_scale=1)
     else:
         raise NotImplementedError('Discriminator model [{:s}] not recognized'.format(which_model))
     init_weights(netE, init_type='kaiming', scale=1)
@@ -148,8 +155,8 @@ def define_D(opt):
         netD = arch.Discriminator_VGG_128(in_nc=opt_net['in_nc'], base_nf=opt_net['nf'], \
             norm_type=opt_net['norm_type'], mode=opt_net['mode'], act_type=opt_net['act_type'])
 
-    elif which_model == 'dis_acd':  # sft-gan, Auxiliary Classifier Discriminator
-        netD = sft_arch.ACD_VGG_BN_96()
+    # elif which_model == 'dis_acd':  # sft-gan, Auxiliary Classifier Discriminator
+        # netD = sft_arch.ACD_VGG_BN_96()
 
     elif which_model == 'discriminator_vgg_96':
         netD = arch.Discriminator_VGG_96(in_nc=opt_net['in_nc'], base_nf=opt_net['nf'], \
