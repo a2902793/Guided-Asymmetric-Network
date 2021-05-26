@@ -1,14 +1,34 @@
 {
-  "name": "DualSR_Effnet_x4_DIV2K_10k", //  please remove "debug_" during training
+  "which_eff":"efficientnet-b0",
+  // "which_eff":"efficientnet-b1",
+  // "which_eff":"efficientnet-b2",
+  // "which_eff":"efficientnet-b3",
+  // "which_eff":"efficientnet-b4",
+  // "which_eff":"efficientnet-b5",
+  // "which_eff":"efficientnet-b6",
+  // "which_eff":"efficientnet-b7",
+  // "which_eff":"efficientnet-l2",
+  "name": "15MBblock-removeHead",
+  // "name": "DualSR_Effnet_x4_DIV2K_Res_Shortcut_10MBblock_bias",
+  // "name": "DualSR_Effnet_b1_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_b2_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_b3_x4_DIV2K_10k_changeInput", //  please remove "debug_" during training
+  // "name": "DualSR_Effnet_b4_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_b5_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_b6_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_b7_x4_DIV2K_10k_changeInput",
+  // "name": "DualSR_Effnet_l2_x4_DIV2K_10k_changeInput",
   "use_tb_logger": true,
   "model":"DualSR",
   "scale": 4,
   "gpu_ids": [
-    0,
-    1,
-    2,
-    3
-  ],
+              0,
+              1,
+              2,
+              3,
+              4
+              
+            ],
 
   "datasets": {
     "train": {
@@ -35,9 +55,10 @@
   
   "path": {
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
+    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/training_state/6000.state",
+    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/models/6000_G.pth",
+    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/models/6000_D.pth"
   },
-
-  "which_eff":"efficientnet-b0",
 
   "network_G": {
     "which_model_G": "DualSR_Effnet",
@@ -94,7 +115,7 @@
 
     "val_freq": 2e3,
     "manual_seed": 0,
-    "niter": 1e4
+    "niter": 2e5
   },
 
   "logger": {

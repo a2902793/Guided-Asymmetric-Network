@@ -29,7 +29,7 @@ class DualSRModel(BaseModel):
         if self.is_train:
             # G pixel loss
             if train_opt['pixel_weight'] > 0:
-                l_pix_type = train_opt['pixel_criterion']
+                l_pix_type = train_opt['pixel_criterion'] #問哪種loss
                 if l_pix_type == 'l1':
                     self.cri_pix = nn.L1Loss().to(self.device) #計算output和target之差的絕對值，可選返回同維度的tensor或者是一個標量。
                 elif l_pix_type == 'l2':
@@ -43,7 +43,7 @@ class DualSRModel(BaseModel):
 
             # G feature loss
             if train_opt['feature_weight'] > 0:
-                l_fea_type = train_opt['feature_criterion']
+                l_fea_type = train_opt['feature_criterion'] #問哪種loss
                 if l_fea_type == 'l1':
                     self.cri_fea = nn.L1Loss().to(self.device)
                 elif l_fea_type == 'l2':
@@ -127,25 +127,20 @@ class DualSRModel(BaseModel):
 
         l_g_total = 0
         if step % self.D_update_ratio == 0 and step > self.D_init_iters:
-            if self.cri_pix:  # pixel loss
-                l_g_pix = self.l_pix_w * self.cri_pix(self.fake_L, self.var_H)
+            if self.cri_pix:  # pixel loss 
                 # add mask to balance high and low part, detach the fake_L and fake_H or not?
-                # l_g_pix += self.l_pix_w*self.cri_pix((self.fake_L.mul(1-torch.sigmoid(self.mask))+\
-                #                                      self.fake_H.mul(torch.sigmoid(self.mask))), self.var_H)
                 #use the detach
-                l_g_pix += self.l_pix_w * self.cri_pix(self.fake_H, self.var_H)
-                l_g_pix += self.l_pix_w * self.cri_pix(self.mask, self.var_H)
-
-                # l_g_pix += self.l_pix_w * self.cri_pix((self.fake_L.detach().mul(1 - torch.sigmoid(self.mask)) + \
-                #                                         self.fake_H.detach().mul(torch.sigmoid(self.mask))), self.var_H)
+                l_g_pix = self.l_pix_w * self.cri_pix(self.fake_L, self.var_H) # L pixel loss
+                l_g_pix += self.l_pix_w * self.cri_pix(self.fake_H, self.var_H) # H pixel loss
+                l_g_pix += self.l_pix_w * self.cri_pix(self.mask, self.var_H) # mask pixel loss
                 l_g_total += l_g_pix
             if self.cri_fea:
                 real_fea = self.netF(self.var_H).detach()
-                if self.cri_fea_low:
+                if self.cri_fea_low: # VGG19看fake_L
                     fake_fea_low = self.netF(self.fake_L)
                     l_g_fea_low = self.l_fea_w * self.cri_fea(fake_fea_low, real_fea)
                     l_g_total += l_g_fea_low
-                if self.cri_fea_high:
+                if self.cri_fea_high: # VGG19看fake_H
                     fake_fea_high = self.netF(self.fake_H)
                     l_g_fea_high = self.l_fea_w*self.cri_fea(fake_fea_high, real_fea)
                     l_g_total += l_g_fea_high
@@ -210,7 +205,7 @@ class DualSRModel(BaseModel):
     def test(self):
         self.netG.eval()
         with torch.no_grad():
-            self.fake_L,self.fake_H_L,self.fake_H = self.netG(self.var_L)
+            self.fake_L,self.fake_H,self.fake_mask = self.netG(self.var_L)
             # self.fake_H = self.fake_L.mul(1-torch.sigmoid(self.mask))+self.fake_H.mul(torch.sigmoid(self.mask))
         self.netG.train()
 
@@ -219,8 +214,10 @@ class DualSRModel(BaseModel):
 
     def get_current_visuals(self, need_HR=True):
         out_dict = OrderedDict()
+        out_dict['fake_LF'] = self.fake_L.detach()[0].float().cpu()
+        out_dict['fake_HF'] = self.fake_H.detach()[0].float().cpu()
         out_dict['LR'] = self.var_L.detach()[0].float().cpu()
-        out_dict['SR'] = self.fake_H.detach()[0].float().cpu()
+        out_dict['SR'] = self.fake_mask.detach()[0].float().cpu()
         if need_HR:
             out_dict['HR'] = self.var_H.detach()[0].float().cpu()
         return out_dict

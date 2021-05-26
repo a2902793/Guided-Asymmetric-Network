@@ -14,6 +14,7 @@ import options.options as option
 from utils import util
 from data import create_dataloader, create_dataset
 from models import create_model
+
 # def print_network(net):
 #     num_params = 0
 #     for param in net.parameters():
@@ -24,7 +25,8 @@ from models import create_model
 def main():
     # options
     parser = argparse.ArgumentParser()
-    parser.add_argument('-opt', type=str, required=True, help='Path to option JSON file.')
+    parser.add_argument('-opt', type=str, required=False, default='options/train/DualSR_pretrain.json', help='Path to option JSON file.')
+    # parser.add_argument('-opt', type=str, required=True, help='Path to option JSON file.')
     opt = option.parse(parser.parse_args().opt, is_train=True)
     opt = option.dict_to_nonedict(opt)  # Convert to NoneDict, which return None for missing key.
 
@@ -124,6 +126,8 @@ def main():
 
             # validation
             if current_step % opt['train']['val_freq'] == 0:
+                avg_psnr_SRCNN = 0.0
+                avg_psnr_GAN = 0.0
                 avg_psnr = 0.0
                 idx = 0
                 for val_data in val_loader:
@@ -137,30 +141,48 @@ def main():
                     model.test()
 
                     visuals = model.get_current_visuals()
+                    SRCNN_img = util.tensor2img(visuals['fake_LF'])  # SRCNN做的
+                    GAN_img = util.tensor2img(visuals['fake_HF'])  # GAN做的
                     sr_img = util.tensor2img(visuals['SR'])  # uint8
                     gt_img = util.tensor2img(visuals['HR'])  # uint8
 
                     # Save SR images for reference
                     save_img_path = os.path.join(img_dir, '{:s}_{:d}.png'.format(\
                         img_name, current_step))
+                    
+                    # util.save_img(SRCNN_img, os.path.join(img_dir, 'SRCNN_{:s}_{:d}.png'.format(img_name, current_step)))
+                    # util.save_img(GAN_img, os.path.join(img_dir, 'GAN_{:s}_{:d}.png'.format(img_name, current_step)))
                     util.save_img(sr_img, save_img_path)
 
                     # calculate PSNR
                     crop_size = opt['scale']
+
+                    SRCNN_img = SRCNN_img / 255.
+                    GAN_img = GAN_img / 255.
                     gt_img = gt_img / 255.
                     sr_img = sr_img / 255.
+
+                    cropped_SRCNN_img = SRCNN_img[crop_size:-crop_size, crop_size:-crop_size, :]
+                    cropped_GAN_img = GAN_img[crop_size:-crop_size, crop_size:-crop_size, :]
                     cropped_sr_img = sr_img[crop_size:-crop_size, crop_size:-crop_size, :]
                     cropped_gt_img = gt_img[crop_size:-crop_size, crop_size:-crop_size, :]
+                    
+                    avg_psnr_SRCNN += util.calculate_psnr(cropped_SRCNN_img * 255, cropped_gt_img * 255)
+                    avg_psnr_GAN += util.calculate_psnr(cropped_GAN_img * 255, cropped_gt_img * 255)
                     avg_psnr += util.calculate_psnr(cropped_sr_img * 255, cropped_gt_img * 255)
                     
-
+                avg_psnr_SRCNN = avg_psnr_SRCNN / idx
+                avg_psnr_GAN = avg_psnr_GAN / idx 
                 avg_psnr = avg_psnr / idx
 
                 # log
-                logger.info('# Validation # PSNR: {:.4e}'.format(avg_psnr))
+                # logger.info('# Validation # PSNR: {:.4e} PSNR_SRCNN: {:.4e} PSNR_GAN: {:.4e}'.format(avg_psnr, avg_psnr_SRCNN, avg_psnr_GAN))
+                logger.info('# Validation # PSNR: {:.4e} '.format(avg_psnr))
                 logger_val = logging.getLogger('val')  # validation logger
-                logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}'.format(
-                    epoch, current_step, avg_psnr))
+                logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e} psnr_SRCNN: {:.4e} psnr_GAN: {:.4e}'.format(
+                    epoch, current_step, avg_psnr, avg_psnr_SRCNN, avg_psnr_GAN))
+                # logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}'.format(
+                #     epoch, current_step, avg_psnr))
                 # tensorboard logger
                 if opt['use_tb_logger'] and 'debug' not in opt['name']:
                     tb_logger.add_scalar('psnr', avg_psnr, current_step)

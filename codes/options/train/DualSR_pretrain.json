@@ -1,5 +1,6 @@
 {
-  "name": "DualSR_pretrain_x4_DIV2K_500",
+  "which_eff":"efficientnet-b0",
+  "name": "30-pretrained-noNB",
   "use_tb_logger": true,
   "model": "DualSR_pretrain",
   "scale": 4,
@@ -35,11 +36,15 @@
   },
 
   "path": {
-    "root": "/home/e517herb/Desktop/LCC_BasicSR-master/"
+    "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
+    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/training_state/137000.state",
+    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/models/137000_G.pth",
+    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/models/137000_D.pth"
   },
 
   "network_G": {
-    "which_model_G": "DualSR_RRDB",
+    // "which_model_G": "DualSR_RRDB",
+    "which_model_G": "DualSR_Effnet",
     "norm_type": null,
     "mode": "CNA",
     "nf": 64,
@@ -75,12 +80,12 @@
     ],
 
     "lr_gamma": 0.5,
-    "pixel_criterion": "l2",
+    "pixel_criterion": "l1",
     "pixel_weight": 1.0,
     "feature_weight": 1,
     "val_freq": 1e3,
     "manual_seed": 0,
-    "niter": 5e3
+    "niter": 1e6
     
   },
 

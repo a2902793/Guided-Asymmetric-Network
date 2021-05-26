@@ -294,7 +294,6 @@ class EfficientNet(nn.Module):
             if drop_connect_rate:
                 drop_connect_rate *= float(idx) / len(self._blocks)  # scale drop connect_rate
             x = block(x, drop_connect_rate=drop_connect_rate)
-
         # Head
         x = self._swish(self._bn1(self._conv_head(x)))
 

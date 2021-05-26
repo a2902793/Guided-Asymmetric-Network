@@ -67,10 +67,7 @@ class DualSR_pretrain(BaseModel):
     def optimize_parameters(self, step):
         self.optimizer_G.zero_grad()
         self.fake_Low, self.fake_high, self.fake_mask = self.netG(self.var_L)
-        # l_pix = self.l_pix_w * self.cri_pix(self.fake_Low, self.real_H)
-        # l_pix = l_pix + self.l_pix_w * self.cri_pix(self.fake_high, self.real_H)
-        # l_pix = l_pix + self.l_pix_w * self.cri_pix(self.fake_mask, self.real_H)
-        l_pix = self.l_pix_w * self.cri_pix(self.fake_Low, self.real_H) + self.l_pix_w * self.cri_pix(self.fake_high, self.real_H) + self.l_pix_w * self.cri_pix(self.fake_mask, self.real_H)
+        l_pix = self.l_pix_w * self.cri_pix(self.fake_Low, self.real_H) + self.l_pix_w * self.cri_pix(self.fake_high, self.real_H) + self.l_pix_w * self.cri_pix(self.fake_mask, self.real_H) 
         l_pix.backward()
         self.optimizer_G.step()
 
@@ -80,8 +77,7 @@ class DualSR_pretrain(BaseModel):
     def test(self):
         self.netG.eval()
         with torch.no_grad():
-            self.fake_Low, self.fake_high, self.fake_mask = self.netG(self.var_L)
-            self.fake_H = self.fake_mask
+            self.fake_L, self.fake_H, self.fake_mask = self.netG(self.var_L)
         self.netG.train()
 
     def test_x8(self):
@@ -129,8 +125,10 @@ class DualSR_pretrain(BaseModel):
 
     def get_current_visuals(self, need_HR=True):
         out_dict = OrderedDict()
+        out_dict['fake_LF'] = self.fake_L.detach()[0].float().cpu()
+        out_dict['fake_HF'] = self.fake_H.detach()[0].float().cpu()
         out_dict['LR'] = self.var_L.detach()[0].float().cpu()
-        out_dict['SR'] = self.fake_H.detach()[0].float().cpu()
+        out_dict['SR'] = self.fake_mask.detach()[0].float().cpu()
         if need_HR:
             out_dict['HR'] = self.real_H.detach()[0].float().cpu()
         return out_dict

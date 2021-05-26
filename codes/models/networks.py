@@ -89,7 +89,7 @@ def define_G(opt):
     opt_net = opt['network_G']
     which_model = opt_net['which_model_G']
     effnet=opt['which_eff']
-    blocks_args, global_params=get_model_params(effnet, None)
+    #blocks_args, global_params=get_model_params(effnet, None)
 
     if which_model == 'RRDB_net':  # RRDB
         netG = arch.RRDBNet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
@@ -109,10 +109,10 @@ def define_G(opt):
                             act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
     elif which_model=='DualSR_Effnet':
         netG = DualSR_Effnet.DualSR_Effnet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-                            nb_e=opt_net['nb_e'],gc=opt_net['gc'], upscale=64,
+                            nb_e=opt_net['nb_e'],gc=opt_net['gc'], upscale=4,
                             norm_type=opt_net['norm_type'],
                             act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv',
-                            blocks_args=blocks_args, global_params=global_params)
+                            model_name=effnet)
 
     else:
         raise NotImplementedError('Generator model [{:s}] not recognized'.format(which_model))

@@ -1,12 +1,14 @@
-{
-  "name": "DualSR_x4_herbtest-1" , //"RRDB_DualSR_x4_200000"
+{ 
+  "which_eff":"efficientnet-b0",
+  "name": "GDSR-test" , //"RRDB_DualSR_x4_200000"
   "suffix": "",
   "model": "DualSR",
   "scale": 4,
   "gpu_ids": [0,
               1,
               2,
-              3],
+              3,
+              4],
 
   "datasets": {
     //"test_1": {
@@ -32,10 +34,10 @@
     },
     "test_3": {
       // the 1st test dataset
-      "name": "manga109",
+      "name": "BSDS100",
       "mode": "LRHR",
-      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/manga109"
-      //"dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/Manga109_LR"
+      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/BSDS100"
+      //"dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/BSD100/LR"
     },
     "test_4": {
       // the 1st test dataset
@@ -46,11 +48,13 @@
     },
     "test_5": {
       // the 1st test dataset
-      "name": "BSDS100",
+      "name": "manga109",
       "mode": "LRHR",
-      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/BSDS100"
-      //"dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/BSD100/LR"
+      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/manga109"
+      //"dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/Manga109_LR"
     }
+    
+    
     // "test_6": {
     //   //the 1st test dataset
     //   "name": "set5",
@@ -76,15 +80,15 @@
 
   "path": {
     "root": "/home/e517herb/Desktop/herb_Done/",
-    //"pretrain_model_G": "../experiments/pretrained_models/DualSR_200000_G.pth"
+    //"pretrain_model_G": "../experiments/pretrained_models/DualSR_200000_G.pth"6
 
-    "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_x4_DIV2K_nopretrained_herbtest/models/latest_G.pth"
+    "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-ready/models/306000_G.pth"
     // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/trained_models/200k_G.pth"
     // "pretrain_model_D": "/media/e621/RAID5/e621/downloads/.tmp/LCC_BasicSR-master/experiments/trained_models/latest_D.pth"
   },
 
   "network_G": {
-    "which_model_G": "DualSR_RRDB",
+    "which_model_G": "DualSR_Effnet",
     // RRDB_net | sr_resnet,
     "norm_type": null,
     "mode": "CNA",

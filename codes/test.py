@@ -45,6 +45,10 @@ for test_loader in test_loaders:
     test_results['ssim'] = []
     test_results['psnr_y'] = []
     test_results['ssim_y'] = []
+    test_results['psnr_SRCNN'] = []
+    test_results['ssim_SRCNN'] = []
+    test_results['psnr_GAN'] = []
+    test_results['ssim_GAN'] = []
 
     for data in test_loader:
         need_HR = False if test_loader.dataset.opt['dataroot_HR'] is None else True
@@ -56,6 +60,8 @@ for test_loader in test_loaders:
         model.test()  # test
         visuals = model.get_current_visuals(need_HR=need_HR)
 
+        SRCNN_img = util.tensor2img(visuals['fake_LF'])  # SRCNN做的
+        GAN_img = util.tensor2img(visuals['fake_HF'])  # GAN做的
         sr_img = util.tensor2img(visuals['SR'])  # uint8
 
         # save images
@@ -64,20 +70,41 @@ for test_loader in test_loaders:
             save_img_path = os.path.join(dataset_dir, img_name + suffix + '.png')
         else:
             save_img_path = os.path.join(dataset_dir, img_name + '.png')
+        
+        util.save_img(SRCNN_img, os.path.join(dataset_dir, 'SRCNN_{:s}.png'.format(img_name)))
+        util.save_img(GAN_img, os.path.join(dataset_dir, 'GAN_{:s}.png'.format(img_name)))
         util.save_img(sr_img, save_img_path)
 
         # calculate PSNR and SSIM
         if need_HR:
+
+
             gt_img = util.tensor2img(visuals['HR'])
+            SRCNN_img = SRCNN_img / 255.
+            GAN_img = GAN_img / 255.
             gt_img = gt_img / 255.
             sr_img = sr_img / 255.
 
             crop_border = test_loader.dataset.opt['scale']
+            cropped_SRCNN_img = SRCNN_img[crop_border:-crop_border, crop_border:-crop_border, :]
+            cropped_GAN_img = GAN_img[crop_border:-crop_border, crop_border:-crop_border, :]
+
             cropped_sr_img = sr_img[crop_border:-crop_border, crop_border:-crop_border, :]
             cropped_gt_img = gt_img[crop_border:-crop_border, crop_border:-crop_border, :]
 
+            psnr_SRCNN = util.calculate_psnr(cropped_SRCNN_img * 255, cropped_gt_img * 255)
+            ssim_SRCNN= util.calculate_ssim(cropped_SRCNN_img * 255, cropped_gt_img * 255)
+            psnr_GAN = util.calculate_psnr(cropped_GAN_img * 255, cropped_gt_img * 255)
+            ssim_GAN = util.calculate_ssim(cropped_GAN_img * 255, cropped_gt_img * 255)
+            
             psnr = util.calculate_psnr(cropped_sr_img * 255, cropped_gt_img * 255)
             ssim = util.calculate_ssim(cropped_sr_img * 255, cropped_gt_img * 255)
+
+            test_results['psnr_SRCNN'].append(psnr_SRCNN)
+            test_results['ssim_SRCNN'].append(ssim_SRCNN)
+            test_results['psnr_GAN'].append(psnr_GAN) 
+            test_results['ssim_GAN'].append(ssim_GAN)
+
             test_results['psnr'].append(psnr)
             test_results['ssim'].append(ssim)
 
@@ -99,8 +126,16 @@ for test_loader in test_loaders:
 
     if need_HR:  # metrics
         # Average PSNR/SSIM results
-        ave_psnr = sum(test_results['psnr']) / len(test_results['psnr'])
+        ave_psnr_SRCNN = sum(test_results['psnr_SRCNN']) / len(test_results['psnr_SRCNN'])
+        ave_ssim_SRCNN = sum(test_results['ssim_SRCNN']) / len(test_results['ssim_SRCNN'])
+        ave_psnr_GAN = sum(test_results['psnr_GAN']) / len(test_results['psnr_GAN'])
+        ave_ssim_GAN = sum(test_results['ssim_GAN']) / len(test_results['ssim_GAN'])
+        ave_psnr = (sum(test_results['psnr']) / len(test_results['psnr']))
         ave_ssim = sum(test_results['ssim']) / len(test_results['ssim'])
+        logger.info('----Average SRCNN PSNR/SSIM results for {}----\n\tPSNR: {:.6f} dB; SSIM: {:.6f}\n'\
+                .format(test_set_name, ave_psnr_SRCNN, ave_ssim_SRCNN))
+        logger.info('----Average GAN PSNR/SSIM results for {}----\n\tPSNR: {:.6f} dB; SSIM: {:.6f}\n'\
+                .format(test_set_name, ave_psnr_GAN, ave_ssim_GAN))
         logger.info('----Average PSNR/SSIM results for {}----\n\tPSNR: {:.6f} dB; SSIM: {:.6f}\n'\
                 .format(test_set_name, ave_psnr, ave_ssim))
         if test_results['psnr_y'] and test_results['ssim_y']:

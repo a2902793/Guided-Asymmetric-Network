@@ -115,7 +115,7 @@ def round_repeats(repeats, global_params):
     if not multiplier:
         return repeats
     # follow the formula transferred from official TensorFlow implementation
-    return int(math.ceil(multiplier * repeats))
+    return int(math.ceil(multiplier * repeats)) #不小於x的最小整數
 
 
 def drop_connect(inputs, p, training):
@@ -386,6 +386,7 @@ class BlockDecoder(object):
         Returns:
             block_string: A String form of BlockArgs.
         """
+        # r1_k3_s11_e1_i32_o16_se0.25
         args = [
             'r%d' % block.num_repeat,
             'k%d' % block.kernel_size,
@@ -437,16 +438,16 @@ def efficientnet_params(model_name):
     """
     params_dict = {
         # Coefficients:   width,depth,res,dropout
-        'efficientnet-b0': (1.0, 1.0, 224, 0.2),
-        'efficientnet-b1': (1.0, 1.1, 240, 0.2),
-        'efficientnet-b2': (1.1, 1.2, 260, 0.3),
-        'efficientnet-b3': (1.2, 1.4, 300, 0.3),
-        'efficientnet-b4': (1.4, 1.8, 380, 0.4),
-        'efficientnet-b5': (1.6, 2.2, 456, 0.4),
-        'efficientnet-b6': (1.8, 2.6, 528, 0.5),
-        'efficientnet-b7': (2.0, 3.1, 600, 0.5),
-        'efficientnet-b8': (2.2, 3.6, 672, 0.5),
-        'efficientnet-l2': (4.3, 5.3, 800, 0.5),
+        'efficientnet-b0': (1.0, 1.0, None, 0.2),
+        'efficientnet-b1': (1.0, 1.1, None, 0.2),
+        'efficientnet-b2': (1.1, 1.2, None, 0.3),
+        'efficientnet-b3': (1.2, 1.4, None, 0.3),
+        'efficientnet-b4': (1.4, 1.8, None, 0.4),
+        'efficientnet-b5': (1.6, 2.2, None, 0.4),
+        'efficientnet-b6': (1.8, 2.6, None, 0.5),
+        'efficientnet-b7': (2.0, 3.1, None, 0.5),
+        'efficientnet-b8': (2.2, 3.6, None, 0.5),
+        'efficientnet-l2': (4.3, 5.3, None, 0.5),
     }
     return params_dict[model_name]
 
@@ -469,13 +470,42 @@ def efficientnet(width_coefficient=None, depth_coefficient=None, image_size=None
     # Blocks args for the whole model(efficientnet-b0 by default)
     # It will be modified in the construction of EfficientNet Class according to model
     blocks_args = [
-        'r1_k3_s11_e1_i32_o16_se0.25',
-        'r2_k3_s22_e6_i16_o24_se0.25',
-        'r2_k5_s22_e6_i24_o40_se0.25',
-        'r3_k3_s22_e6_i40_o80_se0.25',
-        'r3_k5_s11_e6_i80_o112_se0.25',
-        'r4_k5_s22_e6_i112_o192_se0.25',
-        'r1_k3_s11_e6_i192_o320_se0.25',
+        'r1_k3_s11_e6_i40_o16_se0.25', #0
+        'r1_k3_s11_e6_i56_o24_se0.25', #1
+        'r1_k3_s11_e6_i80_o24_se0.25', #2
+        'r1_k3_s11_e6_i104_o40_se0.25', #3
+        'r1_k3_s11_e6_i144_o40_se0.25', #4
+
+        # 'r1_k3_s11_e1_i40_o16_se0.25', #5
+        # 'r1_k3_s11_e6_i56_o24_se0.25', #6
+        # 'r1_k3_s11_e6_i80_o24_se0.25', #7
+        # 'r1_k3_s11_e6_i104_o40_se0.25', #8
+        # 'r1_k3_s11_e6_i144_o40_se0.25' #9
+
+        # 'r1_k3_s11_e1_i40_o16_se0.25', #10
+        # 'r1_k3_s11_e6_i56_o24_se0.25', #11
+        # 'r1_k3_s11_e6_i80_o24_se0.25', #12
+        # 'r1_k3_s11_e6_i104_o40_se0.25', #13
+        # 'r1_k3_s11_e6_i144_o40_se0.25', #14
+        # 'r1_k5_s11_e6_i112_o112_se0.25', #10
+        # 'r1_k5_s11_e6_i112_o192_se0.25', #11
+        # 'r1_k5_s11_e6_i304_o192_se0.25', #12
+        # 'r1_k5_s11_e6_i192_o192_se0.25', #13
+        # 'r1_k5_s11_e6_i192_o192_se0.25', #14
+        # 'r1_k3_s11_e6_i192_o320_se0.25', #15
+        # 'r1_k3_s11_e1_i32_o16_se0.25',
+        # 'r2_k3_s22_e6_i16_o24_se0.25',
+        # 'r2_k5_s22_e6_i24_o40_se0.25',
+        # 'r3_k3_s22_e6_i40_o80_se0.25',
+        # 'r3_k5_s11_e6_i80_o112_se0.25',
+        # 'r4_k5_s22_e6_i112_o192_se0.25',
+        # 'r1_k3_s11_e6_i192_o320_se0.25',
+        
+        # 'r1_k3_s11_e1_i40_o16_se0.25', #0
+        # 'r1_k3_s11_e6_i56_o24_se0.25', #1
+        # 'r1_k3_s11_e6_i24_o24_se0.25', #2
+        # 'r1_k3_s11_e6_i104_o40_se0.25', #3
+        # 'r1_k3_s11_e6_i40_o40_se0.25', #4
     ]
     blocks_args = BlockDecoder.decode(blocks_args)
 
