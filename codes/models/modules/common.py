@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.cuda.amp import autocast as autocast
 
 def default_conv(in_channels, out_channels, kernel_size, bias=True):
     return nn.Conv2d(
@@ -51,6 +52,7 @@ class ResBlock(nn.Module):
         self.body = nn.Sequential(*m)
         self.res_scale = res_scale
 
+    @autocast()
     def forward(self, x):
         res = self.body(x).mul(self.res_scale)
         res += x

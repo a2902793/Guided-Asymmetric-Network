@@ -1,6 +1,6 @@
 {
   "which_eff":"efficientnet-b0",
-  "name": "30-pretrained-noNB",
+  "name": "tensorboard_30-pretrained-noNB",
   "use_tb_logger": true,
   "model": "DualSR_pretrain",
   "scale": 4,
@@ -17,10 +17,9 @@
       "mode": "LRHR",
       "dataroot_HR": "/media/e621/downloads/.tmp/DIV2K_train_HR_sub.lmdb",
       "dataroot_LR": "/media/e621/downloads/.tmp/DIV2K_train_LR_x4_sub.lmdb",
-      //"dataroot_LR": "/media/e621/RAID5/e621/downloads/.tmp/DIV2K800_train_LR.lmdb",
       "subset_file": null,
       "use_shuffle": true,
-      "n_workers": 8,
+      "n_workers": 16,
       "batch_size": 28,
       "HR_size": 128,
       "use_flip": true,
@@ -37,13 +36,9 @@
 
   "path": {
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
-    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/training_state/137000.state",
-    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/models/137000_G.pth",
-    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-pretrained-noNB/models/137000_D.pth"
   },
 
   "network_G": {
-    // "which_model_G": "DualSR_RRDB",
     "which_model_G": "DualSR_Effnet",
     "norm_type": null,
     "mode": "CNA",
@@ -57,7 +52,8 @@
     "in_nc": 3,
     "out_nc": 3,
     "gc": 32,
-    "group": 1
+    "group": 1,
+    "layers": 6
   },
 
   "network_D": {
@@ -85,8 +81,7 @@
     "feature_weight": 1,
     "val_freq": 1e3,
     "manual_seed": 0,
-    "niter": 1e6
-    
+    "niter": 1e4
   },
 
   "logger": {

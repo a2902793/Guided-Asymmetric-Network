@@ -1,10 +1,10 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
-from models.MPNCOV.python import MPNCOV
 from models.modules.utils import round_filters, round_repeats, drop_connect, get_same_padding_conv2d, get_model_params, efficientnet_params, load_pretrained_weights, Swish, MemoryEfficientSwish, calculate_output_image_size
-
 from torch.nn import functional as F
+from torch.cuda.amp import autocast as autocast
+
 ####################
 # Basic blocks
 ####################
@@ -74,6 +74,7 @@ class ConcatBlock(nn.Module):
         super(ConcatBlock, self).__init__()
         self.sub = submodule
 
+    @autocast()
     def forward(self, x):
         output = torch.cat((x, self.sub(x)), dim=1)
         return output
@@ -92,6 +93,7 @@ class ShortcutBlock(nn.Module):
         super(ShortcutBlock, self).__init__()
         self.sub = submodule
 
+    @autocast()
     def forward(self, x):
         output = x + self.sub(x)
         return output
@@ -182,6 +184,7 @@ class ResNetBlock(nn.Module):
         self.res = sequential(conv0, conv1)
         self.res_scale = res_scale
 
+    @autocast()
     def forward(self, x):
         res = self.res(x).mul(self.res_scale)
         return x + res
@@ -213,6 +216,7 @@ class ResidualDenseBlock_5C(nn.Module):
         self.conv5 = conv_block(nc+4*gc, nc, 3, stride, bias=bias, pad_type=pad_type, \
             norm_type=norm_type, act_type=last_act, mode=mode)
 
+    @autocast()
     def forward(self, x):
         x1 = self.conv1(x)
         x2 = self.conv2(torch.cat((x, x1), 1)) #torch.cat將兩個張量(tensor)拼接在一起，cat是concatenate的意思
@@ -238,6 +242,7 @@ class RRDB(nn.Module):
         self.RDB3 = ResidualDenseBlock_5C(nc, kernel_size, gc, stride, bias, pad_type, \
             norm_type, act_type, mode)
 
+    @autocast()
     def forward(self, x):
         out = self.RDB1(x)
         out = self.RDB2(out)
@@ -328,7 +333,8 @@ class MBBlock(nn.Module):
         Conv2d = get_same_padding_conv2d(image_size=image_size)
         self._project_conv = Conv2d(in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False)
         # self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
-        self._swish = MemoryEfficientSwish()
+        # self._swish = MemoryEfficientSwish()
+        self._relu = nn.ReLU()
 
     def forward(self, inputs, drop_connect_rate=None):
         """MBConvBlock's forward function.
@@ -345,18 +351,21 @@ class MBBlock(nn.Module):
         x = inputs
         if self._block_args.expand_ratio != 1:
             x = self._expand_conv(inputs)
+            x = self._relu(x)
             # x = self._bn0(x)
-            x = self._swish(x)
+            # x = self._swish(x)
 
         x = self._depthwise_conv(x)
+        x = self._relu(x)
         # x = self._bn1(x)
-        x = self._swish(x)
+        # x = self._swish(x)
 
         # Squeeze and Excitation
         if self.has_se:
             x_squeezed = F.adaptive_avg_pool2d(x, 1)
             x_squeezed = self._se_reduce(x_squeezed)
-            x_squeezed = self._swish(x_squeezed)
+            x_squeezed = self._relu(x_squeezed)
+            # x_squeezed = self._swish(x_squeezed)
             x_squeezed = self._se_expand(x_squeezed)
             x = torch.sigmoid(x_squeezed) * x
 
@@ -373,15 +382,15 @@ class MBBlock(nn.Module):
             x = x + inputs  # skip connection
         return x
 
-    def set_swish(self, memory_efficient=True):
-        """Sets swish function as memory efficient (for training) or standard (for export).
+    # def set_swish(self, memory_efficient=True):
+    #     """Sets swish function as memory efficient (for training) or standard (for export).
 
-        Args:
-            memory_efficient (bool): Whether to use memory-efficient version of swish.
-        """
-        self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
+    #     Args:
+    #         memory_efficient (bool): Whether to use memory-efficient version of swish.
+    #     """
+    #     self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
 
-class EfficientNet(nn.Module):
+class Dense_MB(nn.Module):
     """EfficientNet model.
        Most easily loaded with the .from_name or .from_pretrained methods.
 
@@ -455,17 +464,18 @@ class EfficientNet(nn.Module):
         # self._avg_pooling = nn.AdaptiveAvgPool2d(1)
         # self._dropout = nn.Dropout(self._global_params.dropout_rate)
         # self._fc = nn.Linear(out_channels, self._global_params.num_classes)
-        self._swish = MemoryEfficientSwish()
+        # self._swish = MemoryEfficientSwish()
+        self._relu = nn.ReLU()
 
-    def set_swish(self, memory_efficient=True):
-        """Sets swish function as memory efficient (for training) or standard (for export).
+    # def set_swish(self, memory_efficient=True):
+    #     """Sets swish function as memory efficient (for training) or standard (for export).
 
-        Args:
-            memory_efficient (bool): Whether to use memory-efficient version of swish.
-        """
-        self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
-        for block in self._blocks:
-            block.set_swish(memory_efficient)
+    #     Args:
+    #         memory_efficient (bool): Whether to use memory-efficient version of swish.
+    #     """
+    #     self._swish = MemoryEfficientSwish() if memory_efficient else Swish()
+    #     for block in self._blocks:
+    #         block.set_swish(memory_efficient)
 
     def extract_features(self, inputs, in_channel=None):
         """use convolution layer to extract feature .
@@ -491,6 +501,7 @@ class EfficientNet(nn.Module):
         # Head
         # x = self._swish(self._bn1(self._conv_head(x)))
 
+    @autocast()
     def forward(self, x):
         """EfficientNet's forward function.
            Calls extract_features to extract features, applies final linear layer, and returns logits.
@@ -509,27 +520,3 @@ class EfficientNet(nn.Module):
         x_4 = self.extract_features(torch.cat((x, x_0, x_1, x_2, x_3), 1), 4)
         x_4 = x_4.mul(0.2) + x
         return x_4
-
-# class ResidualDenseBlock_5MB(nn.Module):
-#     '''
-#     Residual Dense Block
-#     style: 5 convs
-#     The core module of paper: (Residual Dense Network for Image Super-Resolution, CVPR 18)
-#     '''
-
-#     def __init__(self):
-#         super(ResidualDenseBlock_5MB, self).__init__()
-#         # gc: growth channel, i.e. intermediate中間 channels 
-#         self.conv1 = EfficientNet()
-#         self.conv2 = EfficientNet()
-#         self.conv3 = EfficientNet()
-#         self.conv4 = EfficientNet()
-#         self.conv5 = EfficientNet()
-
-#     def forward(self, x):
-#         x1 = self.conv1(x)
-#         x2 = self.conv2(torch.cat((x, x1), 1)) #torch.cat將兩個張量(tensor)拼接在一起，cat是concatenate的意思
-#         x3 = self.conv3(torch.cat((x, x1, x2), 1)) #1是列相加，0是行相加
-#         x4 = self.conv4(torch.cat((x, x1, x2, x3), 1))
-#         x5 = self.conv5(torch.cat((x, x1, x2, x3, x4), 1))
-#         return x5.mul(0.2) + x

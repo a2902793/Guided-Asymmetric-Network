@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from torch.cuda.amp import autocast as autocast
 
 # Define GAN loss: [vanilla | lsgan | wgan-gp]
 class GANLoss(nn.Module):
@@ -31,7 +31,7 @@ class GANLoss(nn.Module):
             return torch.empty_like(input).fill_(self.real_label_val)
         else:
             return torch.empty_like(input).fill_(self.fake_label_val)
-
+    @autocast()
     def forward(self, input, target_is_real):
         target_label = self.get_target_label(input, target_is_real)
         loss = self.loss(input, target_label)
@@ -39,7 +39,8 @@ class GANLoss(nn.Module):
 
 
 class GradientPenaltyLoss(nn.Module):
-    def __init__(self, device=torch.device('cpu')):
+    # def __init__(self, device = torch.device('cuda')):
+    def __init__(self, device = torch.device('cpu')):
         super(GradientPenaltyLoss, self).__init__()
         self.register_buffer('grad_outputs', torch.Tensor())
         self.grad_outputs = self.grad_outputs.to(device)
@@ -49,6 +50,7 @@ class GradientPenaltyLoss(nn.Module):
             self.grad_outputs.resize_(input.size()).fill_(1.0)
         return self.grad_outputs
 
+    @autocast()
     def forward(self, interp, interp_crit):
         grad_outputs = self.get_grad_outputs(interp_crit)
         grad_interp = torch.autograd.grad(outputs=interp_crit, inputs=interp, \

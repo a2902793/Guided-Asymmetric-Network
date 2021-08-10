@@ -1,3 +1,7 @@
+pytorch/
+vision/
+conda activate tb
+source /home/e517herb/anaconda3/bin/activate
 events*.*
 codes/options/__pycache__/
 codes/models/__pycache__/

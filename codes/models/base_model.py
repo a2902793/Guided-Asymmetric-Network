@@ -37,7 +37,7 @@ class BaseModel():
             scheduler.step()
 
     def get_current_learning_rate(self):
-        return self.schedulers[0].get_lr()[0]
+        return self.schedulers[0].get_last_lr()[0]
 
     def get_network_description(self, network):
         '''Get the string and total parameters of the network'''

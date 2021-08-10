@@ -14,7 +14,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.utils import model_zoo
-
+from torch.cuda.amp import autocast as autocast
 
 ################################################################################
 ### Help functions for model architecture
@@ -53,6 +53,7 @@ BlockArgs.__new__.__defaults__ = (None,) * len(BlockArgs._fields)
 
 # An ordinary implementation of Swish function
 class Swish(nn.Module):
+    @autocast()
     def forward(self, x):
         return x * torch.sigmoid(x)
 
@@ -60,6 +61,7 @@ class Swish(nn.Module):
 # A memory-efficient implementation of Swish function
 class SwishImplementation(torch.autograd.Function):
     @staticmethod
+    @autocast()
     def forward(ctx, i):
         result = i * torch.sigmoid(i)
         ctx.save_for_backward(i)
@@ -72,6 +74,7 @@ class SwishImplementation(torch.autograd.Function):
         return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
 
 class MemoryEfficientSwish(nn.Module):
+    @autocast()
     def forward(self, x):
         return SwishImplementation.apply(x)
 
@@ -217,6 +220,7 @@ class Conv2dDynamicSamePadding(nn.Conv2d):
         super().__init__(in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
         self.stride = self.stride if len(self.stride) == 2 else [self.stride[0]] * 2
 
+    @autocast()
     def forward(self, x):
         ih, iw = x.size()[-2:]
         kh, kw = self.weight.size()[-2:]
@@ -255,6 +259,7 @@ class Conv2dStaticSamePadding(nn.Conv2d):
             self.static_padding = nn.Identity()
 
 
+    @autocast()
     def forward(self, x):
         x = self.static_padding(x)
         x = F.conv2d(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
@@ -286,6 +291,7 @@ class Conv2dStaticSamePadding(nn.Conv2d):
 #         self.kernel_size = [self.kernel_size] * 2 if isinstance(self.kernel_size, int) else self.kernel_size
 #         self.dilation = [self.dilation] * 2 if isinstance(self.dilation, int) else self.dilation
 
+#     @autocast()
 #     def forward(self, x):
 #         ih, iw = x.size()[-2:]
 #         kh, kw = self.kernel_size
@@ -322,6 +328,7 @@ class Conv2dStaticSamePadding(nn.Conv2d):
 #         else:
 #             self.static_padding = nn.Identity()
 
+#     @autocast()
 #     def forward(self, x):
 #         x = self.static_padding(x)
 #         x = F.max_pool2d(x, self.kernel_size, self.stride, self.padding,

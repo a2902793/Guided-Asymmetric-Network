@@ -10,9 +10,11 @@ All rights reserved.
 import torch
 import numpy as np
 from torch.autograd import Function
+from torch.cuda.amp import autocast as autocast
 
 class Covpool(Function):
      @staticmethod
+     @autocast()
      def forward(ctx, input):
          x = input
          batchSize = x.data.shape[0]
@@ -43,6 +45,7 @@ class Covpool(Function):
 
 class Sqrtm(Function):
      @staticmethod
+     @autocast()
      def forward(ctx, input, iterN):
          x = input
          batchSize = x.data.shape[0]
@@ -108,6 +111,7 @@ class Sqrtm(Function):
 
 class Triuvec(Function):
      @staticmethod
+     @autocast()
      def forward(ctx, input):
          x = input
          batchSize = x.data.shape[0]

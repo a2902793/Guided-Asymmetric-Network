@@ -9,6 +9,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.cuda.amp import autocast as autocast
 from .utils import (
     round_filters,
     round_repeats,
@@ -88,6 +89,7 @@ class MBConvBlock(nn.Module):
         self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
         self._swish = MemoryEfficientSwish()
 
+    @autocast()
     def forward(self, inputs, drop_connect_rate=None):
         """MBConvBlock's forward function.
 
@@ -299,6 +301,7 @@ class EfficientNet(nn.Module):
 
         return x
 
+    @autocast()
     def forward(self, inputs):
         """EfficientNet's forward function.
            Calls extract_features to extract features, applies final linear layer, and returns logits.

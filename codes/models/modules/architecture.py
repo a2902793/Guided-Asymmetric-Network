@@ -4,6 +4,7 @@ import torch.nn as nn
 import torchvision
 import torch.nn.utils.spectral_norm as SN
 from . import block as B
+from torch.cuda.amp import autocast as autocast
 
 ####################
 # Generator
@@ -39,6 +40,7 @@ class SRResNet(nn.Module):
         self.model = B.sequential(fea_conv, B.ShortcutBlock(B.sequential(*resnet_blocks, LR_conv)),\
             *upsampler, HR_conv0, HR_conv1)
 
+    @autocast()
     def forward(self, x):
         x = self.model(x)
         return x
@@ -75,6 +77,7 @@ class RRDBNet(nn.Module):
         # self.model = B.sequential(fea_conv, B.ShortcutBlock(B.sequential(*rb_blocks, LR_conv)), \
         #                           *upsampler, HR_conv0, HR_conv1)
 
+    @autocast()
     def forward(self, x):
         x = self.model(x)
         return x
@@ -91,6 +94,7 @@ class model_ex(nn.Module):
         LR_conv = B.conv_block(nf, nf, kernel_size=3, norm_type=norm_type, act_type=None, mode=mode)
         self.model = B.sequential(fea_conv, B.ShortcutBlock(B.sequential(*rb_blocks, LR_conv)))
 
+    @autocast()
     def forward(self, x):
         x = self.model(x)
         return x
@@ -125,6 +129,7 @@ class RRDBNet_G(nn.Module):
         self.model = B.sequential(fea_conv, B.ShortcutBlock(B.sequential(*rb_blocks, LR_conv)),\
             *upsampler, HR_conv0, HR_conv1)
 
+    @autocast()
     def forward(self, x):
         x = self.model(x)
         return x
@@ -175,6 +180,7 @@ class Discriminator_VGG_128(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(512 * 4 * 4, 100), nn.LeakyReLU(0.2, True), nn.Linear(100, 1))
 
+    @autocast()
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
@@ -211,6 +217,7 @@ class Discriminator_VGG_128_SN(nn.Module):
         self.linear0 = SN.spectral_norm(nn.Linear(512 * 4 * 4, 100))
         self.linear1 = SN.spectral_norm(nn.Linear(100, 1))
 
+    @autocast()
     def forward(self, x):
         x = self.lrelu(self.conv0(x))
         x = self.lrelu(self.conv1(x))
@@ -266,6 +273,7 @@ class Discriminator_VGG_96(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(512 * 3 * 3, 100), nn.LeakyReLU(0.2, True), nn.Linear(100, 1))
 
+    @autocast()
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
@@ -316,6 +324,7 @@ class Discriminator_VGG_192(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(512 * 3 * 3, 100), nn.LeakyReLU(0.2, True), nn.Linear(100, 1))
 
+    @autocast()
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
@@ -334,7 +343,8 @@ class VGGFeatureExtractor(nn.Module):
                  feature_layer=34,
                  use_bn=False,
                  use_input_norm=True,
-                 device=torch.device('cpu')):
+                #  device = torch.device('cuda')):
+                device = torch.device('cpu')):
         super(VGGFeatureExtractor, self).__init__()
         if use_bn:
             model = torchvision.models.vgg19_bn(pretrained=True)
@@ -353,6 +363,7 @@ class VGGFeatureExtractor(nn.Module):
         for k, v in self.features.named_parameters():
             v.requires_grad = False
 
+    @autocast()
     def forward(self, x):
         if self.use_input_norm:
             x = (x - self.mean) / self.std
@@ -362,7 +373,8 @@ class VGGFeatureExtractor(nn.Module):
 
 # Assume input range is [0, 1]
 class ResNet101FeatureExtractor(nn.Module):
-    def __init__(self, use_input_norm=True, device=torch.device('cpu')):
+    # def __init__(self, use_input_norm=True, device = torch.device('cuda')):
+    def __init__(self, use_input_norm=True, device = torch.device('cpu')):
         super(ResNet101FeatureExtractor, self).__init__()
         model = torchvision.models.resnet101(pretrained=True)
         self.use_input_norm = use_input_norm
@@ -378,6 +390,7 @@ class ResNet101FeatureExtractor(nn.Module):
         for k, v in self.features.named_parameters():
             v.requires_grad = False
 
+    @autocast()
     def forward(self, x):
         if self.use_input_norm:
             x = (x - self.mean) / self.std
@@ -407,6 +420,7 @@ class MINCNet(nn.Module):
         self.conv52 = nn.Conv2d(512, 512, 3, 1, 1)
         self.conv53 = nn.Conv2d(512, 512, 3, 1, 1)
 
+    @autocast()
     def forward(self, x):
         out = self.ReLU(self.conv11(x))
         out = self.ReLU(self.conv12(out))
@@ -431,7 +445,8 @@ class MINCNet(nn.Module):
 # Assume input range is [0, 1]
 class MINCFeatureExtractor(nn.Module):
     def __init__(self, feature_layer=34, use_bn=False, use_input_norm=True, \
-                device=torch.device('cpu')):
+                # device = torch.device('cuda')):
+                device = torch.device('cpu')):
         super(MINCFeatureExtractor, self).__init__()
 
         self.features = MINCNet()
@@ -442,6 +457,7 @@ class MINCFeatureExtractor(nn.Module):
         for k, v in self.features.named_parameters():
             v.requires_grad = False
 
+    @autocast()
     def forward(self, x):
         output = self.features(x)
         return output
@@ -471,6 +487,7 @@ class double_conv(nn.Module):
             nn.ReLU(inplace=True)
         )
 
+    @autocast()
     def forward(self, x):
         x = self.conv(x)
         return x
@@ -481,6 +498,7 @@ class inconv(nn.Module):
         super(inconv, self).__init__()
         self.conv = double_conv(in_ch, out_ch)
 
+    @autocast()
     def forward(self, x):
         x = self.conv(x)
         return x
@@ -494,6 +512,7 @@ class down(nn.Module):
             double_conv(in_ch, out_ch)
         )
 
+    @autocast()
     def forward(self, x):
         x = self.mpconv(x)
         return x
@@ -536,6 +555,7 @@ class outconv(nn.Module):
         super(outconv, self).__init__()
         self.conv = nn.Conv2d(in_ch, out_ch, 1)
 
+    @autocast()
     def forward(self, x):
         x = self.conv(x)
         return x
@@ -569,6 +589,7 @@ class UNet(nn.Module):
         # self.features = nn.Sequential(*m_features)
         self.classifier = nn.Sequential(*m_classifier)
 
+    @autocast()
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1) #128
@@ -612,6 +633,7 @@ class UNet2(nn.Module):
         # self.features = nn.Sequential(*m_features)
         self.classifier = nn.Sequential(*m_classifier)
 
+    @autocast()
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1) #128

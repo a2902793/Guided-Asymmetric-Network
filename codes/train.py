@@ -9,6 +9,7 @@ from collections import OrderedDict
 import logging
 
 import torch
+# from torch.profiler import profile, record_function, ProfilerActivity
 
 import options.options as option
 from utils import util
@@ -51,9 +52,9 @@ def main():
 
     logger.info(option.dict2str(opt))
     # tensorboard logger
-    if opt['use_tb_logger'] and 'debug' not in opt['name']:
-        from tensorboardX import SummaryWriter
-        tb_logger = SummaryWriter(log_dir='../tb_logger/' + opt['name'])
+    # if opt['use_tb_logger'] and 'debug' not in opt['name']:
+    #     from tensorboardX import SummaryWriter
+    #     tb_logger = SummaryWriter(log_dir='../tb_logger/' + opt['name'])
 
     # random seed
     seed = opt['train']['manual_seed']
@@ -99,6 +100,11 @@ def main():
         start_epoch = 0
 
     # training
+    # with torch.profiler.profile(
+    # schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+    # on_trace_ready=torch.profiler.tensorboard_trace_handler('/home/e517herb/Desktop/._herb_network/tb_logger/profiler_' + opt['name']),
+    # with_stack=True
+    # ) as prof:
     logger.info('Start training from epoch: {:d}, iter: {:d}'.format(start_epoch, current_step))
     for epoch in range(start_epoch, total_epochs):
         for _, train_data in enumerate(train_loader):
@@ -120,8 +126,8 @@ def main():
                 for k, v in logs.items():
                     message += '{:s}: {:.4e} '.format(k, v)
                     # tensorboard logger
-                    if opt['use_tb_logger'] and 'debug' not in opt['name']:
-                        tb_logger.add_scalar(k, v, current_step)
+                    # if opt['use_tb_logger'] and 'debug' not in opt['name']:
+                    #     tb_logger.add_scalar(k, v, current_step)
                 logger.info(message)
 
             # validation
@@ -184,8 +190,8 @@ def main():
                 # logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}'.format(
                 #     epoch, current_step, avg_psnr))
                 # tensorboard logger
-                if opt['use_tb_logger'] and 'debug' not in opt['name']:
-                    tb_logger.add_scalar('psnr', avg_psnr, current_step)
+                # if opt['use_tb_logger'] and 'debug' not in opt['name']:
+                #     tb_logger.add_scalar('psnr', avg_psnr, current_step)
 
             model.update_learning_rate()
             
@@ -194,6 +200,8 @@ def main():
                 logger.info('Saving models and training states.')
                 model.save(current_step)
                 model.save_training_state(epoch, current_step)
+            # prof.step()
+        
 
     logger.info('Saving the final model.')
     model.save('latest')
