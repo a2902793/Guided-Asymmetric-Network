@@ -1,7 +1,6 @@
-import os
 import logging
 from collections import OrderedDict
-
+from timeit import default_timer as timer
 import torch
 import torch.nn as nn
 from torch.optim import lr_scheduler
@@ -18,11 +17,21 @@ class DualSR_pretrain(BaseModel):
         train_opt = opt['train']
 
         # define network and load pretrained models
+        self.start = timer()
         self.netG = networks.define_G(opt).to(self.device)
+        self.end = timer()
+        logger.info(f'[class DualSR_pretrain] networks.define_G(opt): {self.end - self.start} seconds')
+
+        self.start = timer()
         self.load()
+        self.end = timer()
+        logger.info(f'[class DualSR_pretrain] self.load(): {self.end - self.start} seconds')
 
         if self.is_train:
+            self.start = timer()
             self.netG.train()
+            self.end = timer()
+            logger.info(f'[class DualSR_pretrain] self.netG.train(): {self.end - self.start} seconds')
 
             # loss
             loss_type = train_opt['pixel_criterion']
@@ -49,6 +58,7 @@ class DualSR_pretrain(BaseModel):
 
             # schedulers
             if train_opt['lr_scheme'] == 'MultiStepLR':
+                logger.info(f'Optimizers => {self.optimizers}')
                 for optimizer in self.optimizers:
                     self.schedulers.append(lr_scheduler.MultiStepLR(optimizer, \
                         train_opt['lr_steps'], train_opt['lr_gamma']))
@@ -141,13 +151,13 @@ class DualSR_pretrain(BaseModel):
         else:
             net_struc_str = '{}'.format(self.netG.__class__.__name__)
 
-        logger.info('Network G structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
-        logger.info(s)
+        logger.debug('Network G structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
+        logger.debug(s)
 
     def load(self):
         load_path_G = self.opt['path']['pretrain_model_G']
         if load_path_G is not None:
-            logger.info('Loading pretrained model for G [{:s}] ...'.format(load_path_G))
+            logger.debug('Loading pretrained model for G [{:s}] ...'.format(load_path_G))
             self.load_network(load_path_G, self.netG)
 
     def save(self, iter_step):

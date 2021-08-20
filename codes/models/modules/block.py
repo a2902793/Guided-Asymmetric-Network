@@ -308,7 +308,7 @@ class MBBlock(nn.Module):
         if self._block_args.expand_ratio != 1:
             Conv2d = get_same_padding_conv2d(image_size=image_size)
             self._expand_conv = Conv2d(in_channels=inp, out_channels=oup, kernel_size=1, bias=False)
-            # self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+            self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
             # image_size = calculate_output_image_size(image_size, 1) <-- this wouldn't modify image_size
 
         # Depthwise convolution phase
@@ -318,7 +318,7 @@ class MBBlock(nn.Module):
         self._depthwise_conv = Conv2d(
             in_channels=oup, out_channels=oup, groups=oup,  # groups makes it depthwise
             kernel_size=k, stride=s, bias=False)
-        # self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+        self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
         image_size = calculate_output_image_size(image_size, s)
 
         # Squeeze and Excitation layer, if desired
@@ -332,9 +332,9 @@ class MBBlock(nn.Module):
         final_oup = self._block_args.output_filters
         Conv2d = get_same_padding_conv2d(image_size=image_size)
         self._project_conv = Conv2d(in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False)
-        # self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
-        # self._swish = MemoryEfficientSwish()
-        self._relu = nn.ReLU()
+        self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
+        self._swish = MemoryEfficientSwish()
+        # self._relu = nn.ReLU()
 
     def forward(self, inputs, drop_connect_rate=None):
         """MBConvBlock's forward function.
@@ -351,27 +351,27 @@ class MBBlock(nn.Module):
         x = inputs
         if self._block_args.expand_ratio != 1:
             x = self._expand_conv(inputs)
-            x = self._relu(x)
-            # x = self._bn0(x)
-            # x = self._swish(x)
+            # x = self._relu(x)
+            x = self._bn0(x)
+            x = self._swish(x)
 
         x = self._depthwise_conv(x)
-        x = self._relu(x)
-        # x = self._bn1(x)
-        # x = self._swish(x)
+        # x = self._relu(x)
+        x = self._bn1(x)
+        x = self._swish(x)
 
         # Squeeze and Excitation
         if self.has_se:
             x_squeezed = F.adaptive_avg_pool2d(x, 1)
             x_squeezed = self._se_reduce(x_squeezed)
-            x_squeezed = self._relu(x_squeezed)
-            # x_squeezed = self._swish(x_squeezed)
+            # x_squeezed = self._relu(x_squeezed)
+            x_squeezed = self._swish(x_squeezed)
             x_squeezed = self._se_expand(x_squeezed)
             x = torch.sigmoid(x_squeezed) * x
 
         # Pointwise Convolution
         x = self._project_conv(x)
-        # x = self._bn2(x)
+        x = self._bn2(x)
 
         # Skip connection and drop connect
         input_filters, output_filters = self._block_args.input_filters, self._block_args.output_filters

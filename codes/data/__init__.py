@@ -32,6 +32,6 @@ def create_dataset(dataset_opt):
         raise NotImplementedError('Dataset [{:s}] is not recognized.'.format(mode))
     dataset = D(dataset_opt)
     logger = logging.getLogger('base')
-    logger.info('Dataset [{:s} - {:s}] is created.'.format(dataset.__class__.__name__,
+    logger.debug('Dataset [{:s} - {:s}] is created.'.format(dataset.__class__.__name__,
                                                            dataset_opt['name']))
     return dataset

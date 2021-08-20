@@ -38,7 +38,7 @@ class DualSRModel(BaseModel):
                     raise NotImplementedError('Loss type [{:s}] not recognized.'.format(l_pix_type))
                 self.l_pix_w = train_opt['pixel_weight']
             else:
-                logger.info('Remove pixel loss.')
+                logger.debug('Remove pixel loss.')
                 self.cri_pix = None
 
             # G feature loss
@@ -52,7 +52,7 @@ class DualSRModel(BaseModel):
                     raise NotImplementedError('Loss type [{:s}] not recognized.'.format(l_fea_type))
                 self.l_fea_w = train_opt['feature_weight']
             else:
-                logger.info('Remove feature loss.')
+                logger.debug('Remove feature loss.')
                 self.cri_fea = None
             # F network VGGFeatureExtractor    
             if self.cri_fea:  # load VGG perceptual loss
@@ -231,8 +231,8 @@ class DualSRModel(BaseModel):
         else:
             net_struc_str = '{}'.format(self.netG.__class__.__name__)
 
-        logger.info('Network G structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
-        logger.info(s)
+        logger.debug('Network G structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
+        logger.debug(s)
         if self.is_train:
             # Discriminator
             s, n = self.get_network_description(self.netD)
@@ -242,8 +242,8 @@ class DualSRModel(BaseModel):
             else:
                 net_struc_str = '{}'.format(self.netD.__class__.__name__)
 
-            logger.info('Network D structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
-            logger.info(s)
+            logger.debug('Network D structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
+            logger.debug(s)
 
             if self.cri_fea:  # F, Perceptual Network
                 s, n = self.get_network_description(self.netF)
@@ -253,17 +253,17 @@ class DualSRModel(BaseModel):
                 else:
                     net_struc_str = '{}'.format(self.netF.__class__.__name__)
 
-                logger.info('Network F structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
-                logger.info(s)
+                logger.debug('Network F structure: {}, with parameters: {:,d}'.format(net_struc_str, n))
+                logger.debug(s)
 
     def load(self):
         load_path_G = self.opt['path']['pretrain_model_G']
         if load_path_G is not None:
-            logger.info('Loading pretrained model for G [{:s}] ...'.format(load_path_G))
+            logger.debug('Loading pretrained model for G [{:s}] ...'.format(load_path_G))
             self.load_network(load_path_G, self.netG)
         load_path_D = self.opt['path']['pretrain_model_D']
         if self.opt['is_train'] and load_path_D is not None:
-            logger.info('Loading pretrained model for D [{:s}] ...'.format(load_path_D))
+            logger.debug('Loading pretrained model for D [{:s}] ...'.format(load_path_D))
             self.load_network(load_path_D, self.netD)
 
     def save(self, iter_step):

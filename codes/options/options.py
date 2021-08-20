@@ -65,9 +65,10 @@ def parse(opt_path, is_train=True):
     opt['network_G']['scale'] = scale
 
     # export CUDA_VISIBLE_DEVICES
+    logger = logging.getLogger('base')
     gpu_list = ','.join(str(x) for x in opt['gpu_ids'])
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_list
-    print('export CUDA_VISIBLE_DEVICES=' + gpu_list)
+    logger.debug(f'export CUDA_VISIBLE_DEVICES= {gpu_list}')
 
     return opt
 
@@ -113,8 +114,8 @@ def check_resume(opt):
         state_idx = osp.basename(opt['path']['resume_state']).split('.')[0]
         opt['path']['pretrain_model_G'] = osp.join(opt['path']['models'],
                                                    '{}_G.pth'.format(state_idx))
-        logger.info('Set [pretrain_model_G] to ' + opt['path']['pretrain_model_G'])
+        logger.debug('Set [pretrain_model_G] to ' + opt['path']['pretrain_model_G'])
         if 'gan' in opt['model']:
             opt['path']['pretrain_model_D'] = osp.join(opt['path']['models'],
                                                        '{}_D.pth'.format(state_idx))
-            logger.info('Set [pretrain_model_D] to ' + opt['path']['pretrain_model_D'])
+            logger.debug('Set [pretrain_model_D] to ' + opt['path']['pretrain_model_D'])

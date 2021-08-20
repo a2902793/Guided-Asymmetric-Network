@@ -1,6 +1,6 @@
 {
   "which_eff":"efficientnet-b0",
-  "name": "tensorboard_30-pretrained-noNB",
+  "name": "1e5_LH8_M6_pretrained-RELU-2",
   "use_tb_logger": true,
   "model": "DualSR_pretrain",
   "scale": 4,
@@ -36,6 +36,9 @@
 
   "path": {
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
+    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/training_state/100000.state",
+    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/models/100000_G.pth"
+    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M2_pretrained-RELU/models/100000_D.pth"
   },
 
   "network_G": {
@@ -53,7 +56,9 @@
     "out_nc": 3,
     "gc": 32,
     "group": 1,
-    "layers": 6
+    "low_layers": 8,
+    "high_layers": 8,
+    "mask_layers": 2
   },
 
   "network_D": {
@@ -81,7 +86,7 @@
     "feature_weight": 1,
     "val_freq": 1e3,
     "manual_seed": 0,
-    "niter": 1e4
+    "niter": 2e5
   },
 
   "logger": {

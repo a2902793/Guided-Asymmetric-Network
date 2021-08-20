@@ -1,19 +1,12 @@
-pytorch/
-vision/
-conda activate tb
-source /home/e517herb/anaconda3/bin/activate
-events*.*
-codes/options/__pycache__/
-codes/models/__pycache__/
-codes/models/MPNCOV/__pycache__/
-codes/models/modules/__pycache__/
-codes/utils/__pycache__/
-codes/models/MPNCOV/__pycache__/
-codes/models/MPNCOV/python/__pycache__/
-codes/data/__pycache__/
+# Custom
+codes/models/modules/examples.py
+.vscode/
+*test*.*
+tb_logger/
+json/
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 

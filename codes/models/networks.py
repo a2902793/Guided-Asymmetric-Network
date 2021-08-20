@@ -1,14 +1,10 @@
-import functools
-import logging
-import torch
+import functools, logging, torch
 import torch.nn as nn
 from torch.nn import init
 
 import models.modules.architecture as arch
-import models.modules.DualSR_RRDB as DualSR_RRDB
 import models.modules.DualSR_Effnet as DualSR_Effnet
 from models.modules.block import RCAN_conv
-from models.modules.utils import get_model_params
 
 logger = logging.getLogger('base')
 ####################
@@ -65,7 +61,7 @@ def weights_init_orthogonal(m):
 
 def init_weights(net, init_type='kaiming', scale=1, std=0.02):
     # scale for 'kaiming', std for 'normal'.
-    logger.info('Initialization method [{:s}]'.format(init_type))
+    logger.debug('Initialization method [{:s}]'.format(init_type))
     if init_type == 'normal':
         weights_init_normal_ = functools.partial(weights_init_normal, std=std)
         net.apply(weights_init_normal_)
@@ -89,25 +85,8 @@ def define_G(opt):
     opt_net = opt['network_G']
     which_model = opt_net['which_model_G']
     effnet=opt['which_eff']
-    #blocks_args, global_params=get_model_params(effnet, None)
 
-    if which_model == 'RRDB_net':  # RRDB
-        netG = arch.RRDBNet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-            nb=opt_net['nb'], gc=opt_net['gc'], upscale=opt_net['scale'], norm_type=opt_net['norm_type'],
-            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
-    #define the ex_G
-    elif which_model == 'RRDBNet_G':
-        netG = arch.RRDBNet(in_nc=opt_net['nf'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-                            nb=opt_net['nb'], gc=opt_net['gc'], upscale=opt_net['scale'],
-                            norm_type=opt_net['norm_type'],
-                            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
-    elif which_model=='DualSR_RRDB':
-        netG = DualSR_RRDB.DualSR_RRDB(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-                            nb_l_1=opt_net['nb_l_1'],nb_l_2=opt_net['nb_l_2'],nb_h_1=opt_net['nb_h_1'],nb_e=opt_net['nb_e'],
-                            nb_h_2=opt_net['nb_h_2'],nb_m=opt_net['nb_m'], gc=opt_net['gc'], upscale=opt_net['scale'],
-                            norm_type=opt_net['norm_type'],
-                            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
-    elif which_model=='DualSR_Effnet':
+    if which_model=='DualSR_Effnet':
         netG = DualSR_Effnet.DualSR_Effnet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
                             nb_e=opt_net['nb_e'],gc=opt_net['gc'], upscale=4,
                             norm_type=opt_net['norm_type'],
