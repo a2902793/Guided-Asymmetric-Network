@@ -46,13 +46,9 @@ class DualSR_Effnet(nn.Module):
         self.high_dmb_back = B.sequential(*high_mb_back)
         #-----------------------------------------------------------------------------
 
-        '''
-        reconstruct_image 
-        '''
         self.LR_conv_l = B.conv_block(40, nf, kernel_size=3, norm_type=norm_type, act_type=None, mode=mode)
+        self.LR_conv_m = B.conv_block(40, nf, kernel_size=3, norm_type=norm_type, act_type=None, mode=mode)
         self.LR_conv_h = B.conv_block(40, nf, kernel_size=3, norm_type=norm_type, act_type=None, mode=mode)
-        self.LR_conv_M = B.conv_block(40, nf, kernel_size=3, norm_type=norm_type, act_type=None, mode=mode)
-
 
         if upsample_mode == 'upconv':
             upsample_block = B.upconv_blcok
@@ -69,13 +65,16 @@ class DualSR_Effnet(nn.Module):
             self.upsampler_h = B.sequential(*[upsample_block(nf, nf, act_type=act_type) for _ in range(n_upscale)])
             self.upsampler_m = B.sequential(*[upsample_block(nf, nf, act_type=act_type) for _ in range(n_upscale)])
 
-        self.HR_conv1_l = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
-        self.HR_conv1_h = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
-        self.HR_conv1_m = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
+        self.HR_conv_l = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
+        self.HR_conv_m = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
+        self.HR_conv_h = B.conv_block(nf, nf, kernel_size=3, norm_type=None, act_type=act_type)
 
-        self.HR_conv2_l = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
-        self.HR_conv2_h = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
-        self.HR_conv2_m = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
+        '''
+        reconstruct_image 
+        '''
+        self.low_freq_conv = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
+        self.final_conv = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
+        self.high_freq_conv = B.conv_block(nf, out_nc, kernel_size=3, norm_type=None, act_type=None)
 
     def forward(self, shared_conv): 
         shared_conv = self.shared_conv(shared_conv)    
@@ -84,31 +83,34 @@ class DualSR_Effnet(nn.Module):
         _l = self.low_dmb_front(shared_conv).mul(0.2) + shared_conv
         _l_dmb = self.low_dmb_back(_l).mul(0.2) + _l
         
-        _l_fea = self.HR_conv1_l(
+        _l_fea = self.HR_conv_l(
                     self.upsampler_l(
                         self.LR_conv_l(_l_dmb + shared_conv)))
-        low_freq = self.HR_conv2_l(_l_fea)
-        #----------------------------------------------------------------------
-        # high
-        _h = self.concat(torch.cat((_l_dmb, (self.high_dmb_front(shared_conv).mul(0.2) + shared_conv)), 1))
-        _h_dmb = self.high_dmb_back(_h).mul(0.2) + _h + shared_conv
-
-        _h_fea = self.HR_conv1_h(
-                    self.upsampler_h(
-                        self.LR_conv_h(_h_dmb)))
-        high_freq = self.HR_conv2_h(_h_fea)
         #----------------------------------------------------------------------
         # mask
         _m = self.mask_dmb_front(shared_conv).mul(0.2) + shared_conv
         _m_dmb = self.mask_dmb_back(_m).mul(0.2) + _m + shared_conv
 
-        mask = self.HR_conv1_m(
+        mask = self.HR_conv_m(
                 self.upsampler_m(
-                    self.LR_conv_M(_m_dmb)))
+                    self.LR_conv_m(_m_dmb)))
+        #----------------------------------------------------------------------
+        # high
+        _h = self.concat(torch.cat((_l_dmb, (self.high_dmb_front(shared_conv).mul(0.2) + shared_conv)), 1))
+        _h_dmb = self.high_dmb_back(_h).mul(0.2) + _h + shared_conv
+
+        _h_fea = self.HR_conv_h(
+                    self.upsampler_h(
+                        self.LR_conv_h(_h_dmb)))
+        #----------------------------------------------------------------------
+        # For image construction
+        low_freq = self.low_freq_conv(_l_fea)
 
         M_sigmoid = torch.sigmoid(mask)
         combine = M_sigmoid.mul(_h_fea) + (1 - M_sigmoid).mul(_l_fea)
-        combine = self.HR_conv2_m(combine)
+        combine = self.final_conv(combine)
+
+        high_freq = self.high_freq_conv(_h_fea)
 
         return low_freq, high_freq, combine
 
