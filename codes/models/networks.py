@@ -4,7 +4,6 @@ from torch.nn import init
 
 import models.modules.architecture as arch
 import models.modules.DualSR_Effnet as DualSR_Effnet
-from models.modules.block import RCAN_conv
 
 logger = logging.getLogger('base')
 ####################
@@ -84,14 +83,11 @@ def define_G(opt):
     gpu_ids = opt['gpu_ids']
     opt_net = opt['network_G']
     which_model = opt_net['which_model_G']
-    effnet=opt['which_eff']
 
     if which_model=='DualSR_Effnet':
-        netG = DualSR_Effnet.DualSR_Effnet(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-                            nb_e=opt_net['nb_e'],gc=opt_net['gc'], upscale=4,
-                            norm_type=opt_net['norm_type'],
-                            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv',
-                            model_name=effnet)
+        netG = DualSR_Effnet.DualSR_Effnet(low_layers=opt['network_G']['low_layers'],
+                                           mask_layers=opt['network_G']['mask_layers'],
+                                           high_layers=opt['network_G']['high_layers'])
 
     else:
         raise NotImplementedError('Generator model [{:s}] not recognized'.format(which_model))
@@ -102,27 +98,6 @@ def define_G(opt):
         assert torch.cuda.is_available()
         netG = nn.DataParallel(netG)
     return netG
-
-#new added
-def define_E(opt):
-    gpu_ids = opt['gpu_ids']
-    opt_net = opt['network_E']
-    which_model = opt_net['which_model_ex']
-
-    if which_model == 'model_ex':
-        netE = arch.model_ex(in_nc=opt_net['in_nc'], out_nc=opt_net['out_nc'], nf=opt_net['nf'],
-            nb=opt_net['nb'], gc=opt_net['gc'], upscale=opt_net['scale'], norm_type=opt_net['norm_type'],
-            act_type='leakyrelu', mode=opt_net['mode'], upsample_mode='upconv')
-    elif which_model =='RCAN_E':
-        netE =RCAN_conv.RCAN_E(n_resblocks=opt_net['n_resblocks'], n_resgroups=opt_net['n_resgroups'], n_feats=opt_net['n_feats'], reduction=16, scale=4, n_colors=3, rgb_range=255, res_scale=1)
-    else:
-        raise NotImplementedError('Discriminator model [{:s}] not recognized'.format(which_model))
-    init_weights(netE, init_type='kaiming', scale=1)
-    if gpu_ids:
-        netE = nn.DataParallel(netE)
-    return netE
-
-
 
 # Discriminator
 def define_D(opt):

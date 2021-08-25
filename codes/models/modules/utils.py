@@ -265,77 +265,6 @@ class Conv2dStaticSamePadding(nn.Conv2d):
         x = F.conv2d(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         return x
 
-
-# def get_same_padding_maxPool2d(image_size=None):
-#     """Chooses static padding if you have specified an image size, and dynamic padding otherwise.
-#        Static padding is necessary for ONNX exporting of models.
-#     Args:
-#         image_size (int or tuple): Size of the image.
-#     Returns:
-#         MaxPool2dDynamicSamePadding or MaxPool2dStaticSamePadding.
-#     """
-#     if image_size is None:
-#         return MaxPool2dDynamicSamePadding
-#     else:
-#         return partial(MaxPool2dStaticSamePadding, image_size=image_size)
-
-
-# class MaxPool2dDynamicSamePadding(nn.MaxPool2d):
-#     """2D MaxPooling like TensorFlow's 'SAME' mode, with a dynamic image size.
-#        The padding is operated in forward function by calculating dynamically.
-#     """
-
-#     def __init__(self, kernel_size, stride, padding=0, dilation=1, return_indices=False, ceil_mode=False):
-#         super().__init__(kernel_size, stride, padding, dilation, return_indices, ceil_mode)
-#         self.stride = [self.stride] * 2 if isinstance(self.stride, int) else self.stride
-#         self.kernel_size = [self.kernel_size] * 2 if isinstance(self.kernel_size, int) else self.kernel_size
-#         self.dilation = [self.dilation] * 2 if isinstance(self.dilation, int) else self.dilation
-
-#     @autocast()
-#     def forward(self, x):
-#         ih, iw = x.size()[-2:]
-#         kh, kw = self.kernel_size
-#         sh, sw = self.stride
-#         oh, ow = math.ceil(ih / sh), math.ceil(iw / sw)
-#         pad_h = max((oh - 1) * self.stride[0] + (kh - 1) * self.dilation[0] + 1 - ih, 0)
-#         pad_w = max((ow - 1) * self.stride[1] + (kw - 1) * self.dilation[1] + 1 - iw, 0)
-#         if pad_h > 0 or pad_w > 0:
-#             x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2])
-#         return F.max_pool2d(x, self.kernel_size, self.stride, self.padding,
-#                             self.dilation, self.ceil_mode, self.return_indices)
-
-# class MaxPool2dStaticSamePadding(nn.MaxPool2d):
-#     """2D MaxPooling like TensorFlow's 'SAME' mode, with the given input image size.
-#        The padding mudule is calculated in construction function, then used in forward.
-#     """
-
-#     def __init__(self, kernel_size, stride, image_size=None, **kwargs):
-#         super().__init__(kernel_size, stride, **kwargs)
-#         self.stride = [self.stride] * 2 if isinstance(self.stride, int) else self.stride
-#         self.kernel_size = [self.kernel_size] * 2 if isinstance(self.kernel_size, int) else self.kernel_size
-#         self.dilation = [self.dilation] * 2 if isinstance(self.dilation, int) else self.dilation
-
-#         # Calculate padding based on image size and save it
-#         assert image_size is not None
-#         ih, iw = (image_size, image_size) if isinstance(image_size, int) else image_size
-#         kh, kw = self.kernel_size
-#         sh, sw = self.stride
-#         oh, ow = math.ceil(ih / sh), math.ceil(iw / sw)
-#         pad_h = max((oh - 1) * self.stride[0] + (kh - 1) * self.dilation[0] + 1 - ih, 0)
-#         pad_w = max((ow - 1) * self.stride[1] + (kw - 1) * self.dilation[1] + 1 - iw, 0)
-#         if pad_h > 0 or pad_w > 0:
-#             self.static_padding = nn.ZeroPad2d((pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2))
-#         else:
-#             self.static_padding = nn.Identity()
-
-#     @autocast()
-#     def forward(self, x):
-#         x = self.static_padding(x)
-#         x = F.max_pool2d(x, self.kernel_size, self.stride, self.padding,
-#                          self.dilation, self.ceil_mode, self.return_indices)
-#         return x
-
-
 ################################################################################
 ### Helper functions for loading model params
 ################################################################################
@@ -482,37 +411,6 @@ def efficientnet(width_coefficient=None, depth_coefficient=None, image_size=None
         'r1_k3_s11_e6_i80_o24_se0.25', #2
         'r1_k3_s11_e6_i104_o40_se0.25', #3
         'r1_k3_s11_e6_i144_o40_se0.25', #4
-
-        # 'r1_k3_s11_e1_i40_o16_se0.25', #5
-        # 'r1_k3_s11_e6_i56_o24_se0.25', #6
-        # 'r1_k3_s11_e6_i80_o24_se0.25', #7
-        # 'r1_k3_s11_e6_i104_o40_se0.25', #8
-        # 'r1_k3_s11_e6_i144_o40_se0.25' #9
-
-        # 'r1_k3_s11_e1_i40_o16_se0.25', #10
-        # 'r1_k3_s11_e6_i56_o24_se0.25', #11
-        # 'r1_k3_s11_e6_i80_o24_se0.25', #12
-        # 'r1_k3_s11_e6_i104_o40_se0.25', #13
-        # 'r1_k3_s11_e6_i144_o40_se0.25', #14
-        # 'r1_k5_s11_e6_i112_o112_se0.25', #10
-        # 'r1_k5_s11_e6_i112_o192_se0.25', #11
-        # 'r1_k5_s11_e6_i304_o192_se0.25', #12
-        # 'r1_k5_s11_e6_i192_o192_se0.25', #13
-        # 'r1_k5_s11_e6_i192_o192_se0.25', #14
-        # 'r1_k3_s11_e6_i192_o320_se0.25', #15
-        # 'r1_k3_s11_e1_i32_o16_se0.25',
-        # 'r2_k3_s22_e6_i16_o24_se0.25',
-        # 'r2_k5_s22_e6_i24_o40_se0.25',
-        # 'r3_k3_s22_e6_i40_o80_se0.25',
-        # 'r3_k5_s11_e6_i80_o112_se0.25',
-        # 'r4_k5_s22_e6_i112_o192_se0.25',
-        # 'r1_k3_s11_e6_i192_o320_se0.25',
-        
-        # 'r1_k3_s11_e1_i40_o16_se0.25', #0
-        # 'r1_k3_s11_e6_i56_o24_se0.25', #1
-        # 'r1_k3_s11_e6_i24_o24_se0.25', #2
-        # 'r1_k3_s11_e6_i104_o40_se0.25', #3
-        # 'r1_k3_s11_e6_i40_o40_se0.25', #4
     ]
     blocks_args = BlockDecoder.decode(blocks_args)
 
@@ -543,8 +441,8 @@ def get_model_params(model_name, override_params):
         blocks_args, global_params
     """
     if model_name.startswith('efficientnet'):
+    #   1, 1, None, 0.2
         w, d, s, p = efficientnet_params(model_name)
-        # note: all models have drop connect rate = 0.2
         blocks_args, global_params = efficientnet(
             width_coefficient=w, depth_coefficient=d, dropout_rate=p, image_size=s)
     else:
@@ -581,8 +479,6 @@ url_map_advprop = {
     'efficientnet-b7': 'https://github.com/lukemelas/EfficientNet-PyTorch/releases/download/1.0/adv-efficientnet-b7-4652b6dd.pth',
     'efficientnet-b8': 'https://github.com/lukemelas/EfficientNet-PyTorch/releases/download/1.0/adv-efficientnet-b8-22a8fe65.pth',
 }
-
-# TODO: add the petrained weights url map of 'efficientnet-l2'
 
 
 def load_pretrained_weights(model, model_name, weights_path=None, load_fc=True, advprop=False):

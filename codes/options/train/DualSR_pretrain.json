@@ -1,6 +1,5 @@
 {
-  "which_eff":"efficientnet-b0",
-  "name": "1e5_LH8_M6_pretrained-RELU-2",
+  "name": "2e5_LH6_M6_pretrained-2",
   "use_tb_logger": true,
   "model": "DualSR_pretrain",
   "scale": 4,
@@ -56,9 +55,9 @@
     "out_nc": 3,
     "gc": 32,
     "group": 1,
-    "low_layers": 8,
-    "high_layers": 8,
-    "mask_layers": 2
+    "low_layers": 6,
+    "high_layers": 6,
+    "mask_layers": 6
   },
 
   "network_D": {

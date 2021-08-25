@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
-from models.modules.utils import round_filters, round_repeats, drop_connect, get_same_padding_conv2d, get_model_params, efficientnet_params, load_pretrained_weights, Swish, MemoryEfficientSwish, calculate_output_image_size
+from models.modules.utils import round_filters, round_repeats, drop_connect, get_same_padding_conv2d, get_model_params, MemoryEfficientSwish, calculate_output_image_size
 from torch.nn import functional as F
 from torch.cuda.amp import autocast as autocast
 
@@ -410,7 +410,7 @@ class Dense_MB(nn.Module):
         >>> outputs = model(inputs)
     """
 
-    def __init__(self):
+    def __init__(self): #, act_type='relu'
         super().__init__()
         blocks_args, global_params = get_model_params("efficientnet-b0", None)    
         assert isinstance(blocks_args, list), 'blocks_args should be a list'
@@ -433,10 +433,13 @@ class Dense_MB(nn.Module):
         # self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
         image_size = calculate_output_image_size(image_size, stride=1)
 
+        # Append activation function option into block_args (2021.08.22 JY)
+        # self._blocks_args.append(act_type=act_type)
+
         # Build blocks
         self._blocks = nn.ModuleList([])
         for block_args in self._blocks_args:
-
+            
             # Update block input and output filters based on depth multiplier.
             block_args = block_args._replace(
                 input_filters=round_filters(block_args.input_filters, self._global_params),
@@ -449,6 +452,7 @@ class Dense_MB(nn.Module):
             image_size = calculate_output_image_size(image_size, block_args.stride)
             if block_args.num_repeat > 1: # modify block_args to keep same output size
                 block_args = block_args._replace(input_filters=block_args.output_filters, stride=1)
+
             for _ in range(block_args.num_repeat - 1):
                 self._blocks.append(MBBlock(block_args, self._global_params, image_size=image_size))
                 # image_size = calculate_output_image_size(image_size, block_args.stride)  # stride = 1
@@ -465,7 +469,6 @@ class Dense_MB(nn.Module):
         # self._dropout = nn.Dropout(self._global_params.dropout_rate)
         # self._fc = nn.Linear(out_channels, self._global_params.num_classes)
         # self._swish = MemoryEfficientSwish()
-        self._relu = nn.ReLU()
 
     # def set_swish(self, memory_efficient=True):
     #     """Sets swish function as memory efficient (for training) or standard (for export).

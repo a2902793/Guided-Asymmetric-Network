@@ -4,16 +4,7 @@ logger = logging.getLogger('base')
 
 def create_model(opt):
     model = opt['model']
-
-    if model == 'sr':
-        from .SR_model import SRModel as M
-    elif model == 'srgan':
-        from .SRGAN_model import SRGANModel as M
-    elif model == 'srragan':
-        from .SRRaGAN_model import SRRaGANModel as M
-    elif model == 'sftgan':
-        from .SFTGAN_ACD_model import SFTGAN_ACD_Model as M
-    elif model == 'DualSR':
+    if model == 'DualSR':
         from .DualSR_model import DualSRModel as M
     elif model == 'DualSR_pretrain':
         from .DualSR_pretrain import DualSR_pretrain as M

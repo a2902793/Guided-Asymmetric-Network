@@ -1,44 +1,43 @@
 {
-  "which_eff":"efficientnet-b0",
-  "name": "30-ready-noNB",
+  "name": "tb_logger-1e5_LH8_M6_pretrained-RELU-2",
   "use_tb_logger": true,
-  "model":"DualSR",
+  "model": "DualSR_pretrain",
   "scale": 4,
   "gpu_ids": [
-              0,
-              1,
-              2,
-              3 
-            ],
-
+    0,
+    1,
+    2,
+    3
+  ],
+  
   "datasets": {
     "train": {
-      "name": "DIV2K"
-      , "mode": "LRHR"
-      , "dataroot_HR": "/media/e621/downloads/.tmp/DIV2K_train_HR_sub.lmdb"
-      , "dataroot_LR": "/media/e621/downloads/.tmp/DIV2K_train_LR_x4_sub.lmdb"
-      , "subset_file": null
-      , "use_shuffle": true
-      , "n_workers": 8
-      , "batch_size": 25
-      , "HR_size": 128
-      , "use_flip": true
-      , "use_rot": true
+      "name": "DIV2K",
+      "mode": "LRHR",
+      "dataroot_HR": "/media/e621/downloads/.tmp/DIV2K_train_HR_sub.lmdb",
+      "dataroot_LR": "/media/e621/downloads/.tmp/DIV2K_train_LR_x4_sub.lmdb",
+      "subset_file": null,
+      "use_shuffle": true,
+      "n_workers": 16,
+      "batch_size": 28,
+      "HR_size": 128,
+      "use_flip": true,
+      "use_rot": true
     },
-    
+
     "val": {
       "name": "val_set5_part",
       "mode": "LRHR",
       "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/Set5/GTmod12",
       "dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/Set5/LRbicx4"
     }
-  }, 
-  
+  },
+
   "path": {
     "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
-    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-ready/training_state/306000.state",
-    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-ready/models/306000_G.pth",
-    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/30-ready/models/306000_D.pth"
+    // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/training_state/100000.state",
+    // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/models/100000_G.pth"
+    // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M2_pretrained-RELU/models/100000_D.pth"
   },
 
   "network_G": {
@@ -55,9 +54,11 @@
     "in_nc": 3,
     "out_nc": 3,
     "gc": 32,
-    "group": 1
+    "group": 1,
+    "low_layers": 8,
+    "high_layers": 8,
+    "mask_layers": 2
   },
-
 
   "network_D": {
     "which_model_D": "discriminator_vgg_128",
@@ -69,37 +70,26 @@
   },
 
   "train": {
-    "lr_G": 1e-4,
-    "weight_decay_G": 0,
-    "beta1_G": 0.9,
-    "lr_D": 1e-4,
-    "weight_decay_D": 0,
-    "beta1_D": 0.9,
+    "lr_G": 5e-5,
     "lr_scheme": "MultiStepLR",
     "lr_steps": [
-      50000, 
-      100000, 
-      200000, 
-      300000
-    ], 
-    
+      200000,
+      400000,
+      600000,
+      800000
+    ],
+
     "lr_gamma": 0.5,
     "pixel_criterion": "l1",
-    "pixel_weight": 1,
-    "feature_criterion": "l1",
-    "cri_fea_low": 1, // VGG perceptual loss
-    "cri_fea_high": 1, //VGG perceptual loss
+    "pixel_weight": 1.0,
     "feature_weight": 1,
-    "gan_type": "vanilla",
-    "gan_weight": 5e-3,
-
-    "val_freq": 2e3,
+    "val_freq": 1e3,
     "manual_seed": 0,
-    "niter": 1e6
+    "niter": 10
   },
 
   "logger": {
-    "print_freq": 200,
-    "save_checkpoint_freq": 2e3
+    "print_freq": 1,
+    "save_checkpoint_freq": 1e3
   }
 }

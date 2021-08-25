@@ -3,20 +3,10 @@ import torch
 torch.manual_seed(17)
 import torch.nn as nn
 from . import block as B
-import argparse
-from options import options as option
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-opt', type=str, required=False, default='/home/e517herb/Desktop/._herb_network/codes/options/train/DualSR_pretrain.json', help='Path to option JSON file.')
-opt = option.parse(parser.parse_args().opt, is_train=True)
-opt = option.dict_to_nonedict(opt)
-
-class DualSR_Effnet(nn.Module):
-    #                     3      3    64    2         
-    def __init__(self, in_nc, out_nc, nf, nb_e, 
-            gc=32, upscale=4, norm_type=None, 
-            act_type='leakyrelu', mode='CNA', upsample_mode='upconv',
-            model_name=None):
+class DualSR_Effnet(nn.Module):      
+    def __init__(self, low_layers, mask_layers, high_layers,
+            in_nc=3, out_nc=3, nf=64, upscale=4, norm_type=None, act_type='leakyrelu', mode='CNA', upsample_mode='upconv'):
         super(DualSR_Effnet, self).__init__()
         
         n_upscale = int(math.log(upscale, 2))
@@ -29,20 +19,20 @@ class DualSR_Effnet(nn.Module):
         #-----------------------------------------------------------------------------
         self.shared_conv = B.sequential(fea_conv)                               
         #-----------------------------------------------------------------------------
-        low_mb_front = [B.Dense_MB() for _ in range(opt['network_G']['low_layers']//2)]
+        low_mb_front = [B.Dense_MB() for _ in range(low_layers//2)]
         self.low_dmb_front = B.sequential(*low_mb_front)
-        low_mb_back = [B.Dense_MB() for _ in range(opt['network_G']['low_layers']//2)]
+        low_mb_back = [B.Dense_MB() for _ in range(low_layers//2)]
         self.low_dmb_back = B.sequential(*low_mb_back)
         #-----------------------------------------------------------------------------
-        mask_mb_front = [B.Dense_MB() for _ in range(opt['network_G']['mask_layers']//2)]
+        mask_mb_front = [B.Dense_MB() for _ in range(mask_layers//2)]
         self.mask_dmb_front = B.sequential(*mask_mb_front)
-        mask_mb_back = [B.Dense_MB() for _ in range(opt['network_G']['mask_layers']//2)]
+        mask_mb_back = [B.Dense_MB() for _ in range(mask_layers//2)]
         self.mask_dmb_back = B.sequential(*mask_mb_back)
         #-----------------------------------------------------------------------------
-        high_mb_front = [B.Dense_MB() for _ in range(opt['network_G']['high_layers']//2)]
+        high_mb_front = [B.Dense_MB() for _ in range(high_layers//2)]
         self.high_dmb_front = B.sequential(*high_mb_front)
         self.concat = B.sequential(blocks_concat)
-        high_mb_back = [B.Dense_MB() for _ in range(opt['network_G']['high_layers']//2)]
+        high_mb_back = [B.Dense_MB() for _ in range(high_layers//2)]
         self.high_dmb_back = B.sequential(*high_mb_back)
         #-----------------------------------------------------------------------------
 

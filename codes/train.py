@@ -5,12 +5,7 @@ from utils import util
 from data import create_dataloader, create_dataset
 from models import create_model
 
-# def print_network(net):
-#     num_params = 0
-#     for param in net.parameters():
-#         num_params += param.numel()
-#     print('Total number of parameters: %.2f M' % (num_params/1000000))
-#     return num_params
+# import torch.profiler
 
 def main():
     # options
@@ -29,8 +24,8 @@ def main():
                      and 'pretrain_model' not in key and 'resume' not in key))
 
     # config loggers. Before it, the log will not work
-    util.setup_logger(None, opt['path']['log'], 'train', level=logging.INFO, screen=True)
-    util.setup_logger('val', opt['path']['log'], 'val', level=logging.INFO)
+    util.setup_logger(None, opt['path']['log'], 'train', level=logging.DEBUG, screen=True)
+    util.setup_logger('val', opt['path']['log'], 'val', level=logging.DEBUG)
     logger = logging.getLogger('base')
 
     if resume_state:
@@ -88,8 +83,15 @@ def main():
         start_epoch = 0
 
     logger.info('Start training from epoch: {:d}, iter: {:d}'.format(start_epoch, current_step))
+
+    # with torch.profiler.profile(
+    #     schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+    #     on_trace_ready=torch.profiler.tensorboard_trace_handler('./tb_logger'),
+    #     record_shapes=True,
+    #     with_stack=True
+    # ) as prof:
     for epoch in range(start_epoch, total_epochs):
-        start = timer()
+        # start = timer()
         for _, train_data in enumerate(train_loader):
             current_step += 1
             if current_step > total_iters:
@@ -116,7 +118,7 @@ def main():
 
             # validation
             if current_step % opt['train']['val_freq'] == 0:
-                start = timer()
+                # start = timer()
                 avg_psnr_SRCNN = 0.0
                 avg_psnr_GAN = 0.0
                 avg_psnr = 0.0
@@ -172,23 +174,23 @@ def main():
                 logger_val = logging.getLogger('val')  # validation logger
                 logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e} psnr_SRCNN: {:.4e} psnr_GAN: {:.4e}'.format(
                     epoch, current_step, avg_psnr, avg_psnr_SRCNN, avg_psnr_GAN))
-                end = timer()
-                logger.info(f'validation: {end - start} seconds')
+                # end = timer()
+                # logger.info(f'validation: {end - start} seconds')
+
                 # logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}'.format(
                 #     epoch, current_step, avg_psnr))
                 # tensorboard logger
                 # if opt['use_tb_logger'] and 'debug' not in opt['name']:
                 #     tb_logger.add_scalar('psnr', avg_psnr, current_step)
-
-            # model.update_learning_rate()
             
             # save models and training states
             if current_step % opt['logger']['save_checkpoint_freq'] == 0:
                 logger.debug('Saving models and training states.')
                 model.save(current_step)
                 model.save_training_state(epoch, current_step)
-        end = timer()
-        logger.info(f'epoch({epoch}): {end - start} seconds')
+            # prof.step()
+        # end = timer()
+        # logger.info(f'epoch({epoch}): {end - start} seconds')
 
     logger.debug('Saving the final model.')
     model.save('latest')
