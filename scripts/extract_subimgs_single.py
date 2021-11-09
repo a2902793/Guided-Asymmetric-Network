@@ -5,12 +5,12 @@ from multiprocessing import Pool
 import numpy as np
 import cv2
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.progress_bar import ProgressBar # 進度條
+from codes.utils.progress_bar import ProgressBar # 進度條
 
 def main():
     """A multi-thread tool to crop sub imags."""
-    input_folder = '/home/e517herb/Desktop/DIV2K/DIV2K_train_HR'
-    save_folder = '/home/e517herb/Desktop/DIV2K_sub/DIV2K_train_HR_sub/'
+    input_folder = '/home/johnny/DIV2K_train_LR_mild'
+    save_folder = '/home/johnny/DIV2K_train_LR_sub/'
     # input_folder = '/home/e517herb/Desktop/GDSR/image_set/my_photo'
     # save_folder = '/home/e517herb/Desktop/image_sub1'
     n_thread = 20

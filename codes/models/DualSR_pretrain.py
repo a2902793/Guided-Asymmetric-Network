@@ -1,6 +1,5 @@
 import logging
 from collections import OrderedDict
-from timeit import default_timer as timer
 import torch
 import torch.nn as nn
 from torch.optim import lr_scheduler
@@ -17,20 +16,12 @@ class DualSR_pretrain(BaseModel):
         train_opt = opt['train']
 
         # define network and load pretrained models
-        self.start = timer()
         self.netG = networks.define_G(opt).to(self.device)
-        self.end = timer()
-        logger.info(f'[class DualSR_pretrain] networks.define_G(opt): {self.end - self.start} seconds')
-        self.start = timer()
         self.load()
-        self.end = timer()
-        logger.info(f'[class DualSR_pretrain] self.load(): {self.end - self.start} seconds')
+
 
         if self.is_train:
-            self.start = timer()
             self.netG.train()
-            self.end = timer()
-            logger.info(f'[class DualSR_pretrain] self.netG.train(): {self.end - self.start} seconds')
 
             # loss
             loss_type = train_opt['pixel_criterion']
@@ -73,6 +64,7 @@ class DualSR_pretrain(BaseModel):
         if need_HR:
             self.real_H = data['HR'].to(self.device)  # HR
 
+    # @torch.jit.script
     def optimize_parameters(self, step):
         self.optimizer_G.zero_grad()
         self.fake_Low, self.fake_high, self.fake_mask = self.netG(self.var_L)

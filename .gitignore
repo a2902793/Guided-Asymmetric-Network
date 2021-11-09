@@ -4,6 +4,10 @@ codes/models/modules/examples.py
 *test*.*
 tb_logger/
 json/
+*.lmdb
+LCC_BasicSR-master/
+Datasets/
+.test/
 
 # Byte-compiled / optimized / DLL files
 */__pycache__/

@@ -6,12 +6,12 @@ import lmdb
 import cv2
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.progress_bar import ProgressBar
+from codes.utils.progress_bar import ProgressBar
 
 # configurations
 #img_folder = '/home/lcc/CWH/Dataset2/Flickr2K_LR_bicubic/LRx4/*'  # glob matching pattern
-img_folder = '/home/e517herb/Desktop/DIV2K_sub/DIV2K_train_HR_sub/*'
-lmdb_save_path = '/home/e517herb/Desktop/DIV2K_sub/DIV2K800_train_HR.lmdb'  # must end with .lmdb
+img_folder = '/home/johnny/DIV2K_train_LR_sub/*'
+lmdb_save_path = '/home/johnny/DIV2K800_train_LR.lmdb'  # must end with .lmdb
 
 # img_folder = '/home/lcc/CWH/Dataset2/Flickr2K_LR_bicubic/2K_train_LRx4_new/*'
 # lmdb_save_path = '/home/lcc/CWH/Dataset2/Flickr2K_LR_bicubic/2K_train_LR_new.lmdb'  # must end with .lmdb

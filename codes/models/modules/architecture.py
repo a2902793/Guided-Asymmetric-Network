@@ -45,7 +45,6 @@ class SRResNet(nn.Module):
         x = self.model(x)
         return x
 
-
 class RRDBNet(nn.Module):
     def __init__(self, in_nc, out_nc, nf, nb, gc=32, upscale=4, norm_type=None, \
             act_type='leakyrelu', mode='CNA', upsample_mode='upconv'):
@@ -98,7 +97,6 @@ class model_ex(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
-
 
 class RRDBNet_G(nn.Module):
     def __init__(self, in_nc, out_nc, nf, nb, gc=32, upscale=4, norm_type=None, \
@@ -187,7 +185,6 @@ class Discriminator_VGG_128(nn.Module):
         x = self.classifier(x)
         return x
 
-
 # VGG style Discriminator with input size 128*128, Spectral Normalization
 class Discriminator_VGG_128_SN(nn.Module):
     def __init__(self):
@@ -234,7 +231,6 @@ class Discriminator_VGG_128_SN(nn.Module):
         x = self.linear1(x)
         return x
 
-
 class Discriminator_VGG_96(nn.Module):
     def __init__(self, in_nc, base_nf, norm_type='batch', act_type='leakyrelu', mode='CNA'):
         super(Discriminator_VGG_96, self).__init__()
@@ -279,7 +275,6 @@ class Discriminator_VGG_96(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
-
 
 class Discriminator_VGG_192(nn.Module):
     def __init__(self, in_nc, base_nf, norm_type='batch', act_type='leakyrelu', mode='CNA'):
@@ -370,7 +365,6 @@ class VGGFeatureExtractor(nn.Module):
         output = self.features(x)
         return output
 
-
 # Assume input range is [0, 1]
 class ResNet101FeatureExtractor(nn.Module):
     # def __init__(self, use_input_norm=True, device = torch.device('cuda')):
@@ -396,7 +390,6 @@ class ResNet101FeatureExtractor(nn.Module):
             x = (x - self.mean) / self.std
         output = self.features(x)
         return output
-
 
 class MINCNet(nn.Module):
     def __init__(self):
@@ -441,7 +434,6 @@ class MINCNet(nn.Module):
         out = self.conv53(out)
         return out
 
-
 # Assume input range is [0, 1]
 class MINCFeatureExtractor(nn.Module):
     def __init__(self, feature_layer=34, use_bn=False, use_input_norm=True, \
@@ -461,8 +453,6 @@ class MINCFeatureExtractor(nn.Module):
     def forward(self, x):
         output = self.features(x)
         return output
-
-
 
 import torch.nn as nn
 
@@ -492,7 +482,6 @@ class double_conv(nn.Module):
         x = self.conv(x)
         return x
 
-
 class inconv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(inconv, self).__init__()
@@ -502,7 +491,6 @@ class inconv(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         return x
-
 
 class down(nn.Module):
     def __init__(self, in_ch, out_ch):
@@ -516,7 +504,6 @@ class down(nn.Module):
     def forward(self, x):
         x = self.mpconv(x)
         return x
-
 
 class up(nn.Module):
     def __init__(self, in_ch, out_ch, bilinear=True):
@@ -549,7 +536,6 @@ class up(nn.Module):
         x = self.conv(x)
         return x
 
-
 class outconv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(outconv, self).__init__()
@@ -559,7 +545,6 @@ class outconv(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         return x
-
 
 class UNet(nn.Module):
     def __init__(self):

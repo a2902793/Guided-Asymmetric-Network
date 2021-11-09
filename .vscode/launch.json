@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "args": [
                 "-opt",
-                "/home/e517herb/Desktop/._herb_network/codes/options/train/DualSR_pretrain.json"
+                "/home/johnny/Guided-Asymmetric-Network/codes/options/train/DualSR_pretrain.json"
             ],
             "sudo": true
         }

@@ -14,8 +14,8 @@
     "train": {
       "name": "DIV2K",
       "mode": "LRHR",
-      "dataroot_HR": "/media/e621/downloads/.tmp/DIV2K_train_HR_sub.lmdb",
-      "dataroot_LR": "/media/e621/downloads/.tmp/DIV2K_train_LR_x4_sub.lmdb",
+      "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_HR.lmdb",
+      "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_LR.lmdb",
       "subset_file": null,
       "use_shuffle": true,
       "n_workers": 16,
@@ -28,13 +28,13 @@
     "val": {
       "name": "val_set5_part",
       "mode": "LRHR",
-      "dataroot_HR": "/home/e517herb/Desktop/GDSR/image_set/Set5/GTmod12",
-      "dataroot_LR": "/home/e517herb/Desktop/GDSR/image_set/Set5/LRbicx4"
+      "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/GTmod12",
+      "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/LRbicx4"
     }
   },
 
   "path": {
-    "root": "/media/e621/downloads/.tmp/LCC_BasicSR-master/"
+    "root": "/home/johnny/Guided-Asymmetric-Network/LCC_BasicSR-master"
     // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/training_state/100000.state",
     // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M6_pretrained-RELU/models/100000_G.pth"
     // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/1e5_LH8_M2_pretrained-RELU/models/100000_D.pth"

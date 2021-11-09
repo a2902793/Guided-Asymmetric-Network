@@ -9,7 +9,7 @@ def create_model(opt):
     elif model == 'DualSR_pretrain':
         from .DualSR_pretrain import DualSR_pretrain as M
     else:
-        raise NotImplementedError('Model [{:s}] not recognized.'.format(model))
+        raise NotImplementedError(f'Model [{model}] not recognized.')
     m = M(opt)
-    logger.info('Model [{:s}] is created.'.format(m.__class__.__name__))
+    logger.info(f'Model [{m.__class__.__name__}] is created.')
     return m
