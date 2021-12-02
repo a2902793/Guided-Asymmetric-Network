@@ -14,8 +14,8 @@ def main():
             "train": {
                 "name": "DIV2K",
                 "mode": "LRHR",
-                "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_HR.lmdb",
-                "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_LR.lmdb",
+                "dataroot_HR": "/home/a2902793/Guided-Asymmetric-Network/DIV2K800_train_HR.lmdb",
+                "dataroot_LR": "/home/a2902793/Guided-Asymmetric-Network/DIV2K800_train_LR.lmdb",
                 "subset_file": None,
                 "use_shuffle": True,
                 "n_workers": 16,
@@ -27,12 +27,12 @@ def main():
             "val": {
                 "name": "val_set5_part",
                 "mode": "LRHR",
-                "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/GTmod12",
-                "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/LRbicx4"
+                "dataroot_HR": "/home/a2902793/Guided-Asymmetric-Network/Datasets/Set5/GTmod12",
+                "dataroot_LR": "/home/a2902793/Guided-Asymmetric-Network/Datasets/Set5/LRbicx4"
             }
         },
         "path": {
-            "root": "/home/johnny/Guided-Asymmetric-Network/LCC_BasicSR-master"
+            "root": "/home/a2902793/Guided-Asymmetric-Network/LCC_BasicSR-master"
         },
         "network_G": {
             "which_model_G": "DualSR_Effnet",

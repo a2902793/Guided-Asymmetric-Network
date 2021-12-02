@@ -2,5 +2,5 @@
     "python.analysis.extraPaths": [
         "./codes"
     ],
-    "python.pythonPath": "/home/johnny/.conda/envs/herb/bin/python"
+    "python.pythonPath": "/opt/conda/bin/python"
 }

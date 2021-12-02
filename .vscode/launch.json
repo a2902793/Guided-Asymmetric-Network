@@ -12,9 +12,8 @@
             "console": "integratedTerminal",
             "args": [
                 "-opt",
-                "/home/johnny/Guided-Asymmetric-Network/codes/options/train/DualSR_pretrain.json"
-            ],
-            "sudo": true
+                "/home/a2902793/Guided-Asymmetric-Network/codes/options/train/DualSR_pretrain.json"
+            ]
         }
     ]
 }

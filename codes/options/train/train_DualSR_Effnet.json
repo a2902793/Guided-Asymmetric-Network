@@ -34,8 +34,8 @@
     "train": {
       "name": "DIV2K",
       "mode": "LRHR",
-      "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_HR.lmdb",
-      "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/DIV2K800_train_LR.lmdb",
+      "dataroot_HR": "/home/a2902793/Guided-Asymmetric-Network/DIV2K800_train_HR.lmdb",
+      "dataroot_LR": "/home/a2902793/Guided-Asymmetric-Network/DIV2K800_train_LR.lmdb",
       "subset_file": null,
       "use_shuffle": true,
       "n_workers": 8,
@@ -48,13 +48,13 @@
     "val": {
       "name": "val_set5_part",
       "mode": "LRHR",
-      "dataroot_HR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/GTmod12",
-      "dataroot_LR": "/home/johnny/Guided-Asymmetric-Network/Datasets/Set5/LRbicx4"
+      "dataroot_HR": "/home/a2902793/Guided-Asymmetric-Network/Datasets/Set5/GTmod12",
+      "dataroot_LR": "/home/a2902793/Guided-Asymmetric-Network/Datasets/Set5/LRbicx4"
     }
   }, 
   
   "path": {
-    "root": "/home/johnny/Guided-Asymmetric-Network/LCC_BasicSR-master"
+    "root": "/home/a2902793/Guided-Asymmetric-Network/LCC_BasicSR-master"
     // "resume_state": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/training_state/6000.state",
     // "pretrain_model_G": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/models/6000_G.pth",
     // "pretrain_model_D": "/media/e621/downloads/.tmp/LCC_BasicSR-master/experiments/DualSR_Effnet_x4_DIV2K_Res_mul_removeHead_10MBblock/models/6000_D.pth"

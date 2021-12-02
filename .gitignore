@@ -3,7 +3,6 @@ codes/models/modules/examples.py
 .vscode/
 *test*.*
 tb_logger/
-json/
 *.lmdb
 LCC_BasicSR-master/
 Datasets/

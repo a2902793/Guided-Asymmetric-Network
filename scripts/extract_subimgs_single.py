@@ -9,8 +9,8 @@ from codes.utils.progress_bar import ProgressBar # 進度條
 
 def main():
     """A multi-thread tool to crop sub imags."""
-    input_folder = '/home/johnny/DIV2K_train_LR_mild'
-    save_folder = '/home/johnny/DIV2K_train_LR_sub/'
+    input_folder = '/home/a2902793/DIV2K_train_LR_mild'
+    save_folder = '/home/a2902793/DIV2K_train_LR_sub/'
     # input_folder = '/home/e517herb/Desktop/GDSR/image_set/my_photo'
     # save_folder = '/home/e517herb/Desktop/image_sub1'
     n_thread = 20
