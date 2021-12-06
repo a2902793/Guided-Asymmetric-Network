@@ -10,7 +10,7 @@ import torch.profiler
 def main():
     # options
     parser = argparse.ArgumentParser()
-    parser.add_argument('-opt', type=str, required=False, default='options/train/DualSR_pretrain.json', help='Path to option JSON file.')
+    parser.add_argument('-opt', type=str, required=False, default='options/train/pretrain.json', help='Path to option JSON file.')
     opt = option.parse(parser.parse_args().opt, is_train=True)
     opt = option.dict_to_nonedict(opt)  # Convert to NoneDict, which return None for missing key.
 
